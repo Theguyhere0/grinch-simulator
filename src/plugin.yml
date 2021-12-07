@@ -1,0 +1,7 @@
+main: me.theguyhere.grinchsimulator.Main
+name: GrinchSimulator
+version: 0.0.1
+author: Theguyhere
+api-version: 1.18
+depend: [ProtocolLib]
+softdepend: [WorldGuard, WorldEdit, Multiverse-core]

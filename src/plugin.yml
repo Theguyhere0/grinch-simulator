@@ -2,6 +2,13 @@ main: me.theguyhere.grinchsimulator.Main
 name: GrinchSimulator
 version: 0.0.1
 author: Theguyhere
-api-version: 1.18
+api-version: 1.16
 depend: [ProtocolLib]
 softdepend: [WorldGuard, WorldEdit, Multiverse-core]
+
+commands:
+  grinch:
+    admin:
+      description: Opens up the admin panel for Grinch Simulator
+      usage: /grinch admin
+      permission: grinch.use

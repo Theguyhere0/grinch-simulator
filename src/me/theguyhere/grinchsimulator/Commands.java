@@ -1,5 +1,6 @@
 package me.theguyhere.grinchsimulator;
 
+import me.theguyhere.grinchsimulator.GUI.Inventories;
 import me.theguyhere.grinchsimulator.tools.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -30,6 +31,24 @@ public class Commands implements CommandExecutor {
                 if (player != null)
                     player.sendMessage(Utils.notify(language.getString("commandError")));
                 else Utils.debugError("Invalid command. Use 'grinch help' for more info.",0);
+                return true;
+            }
+
+            // Admin panel
+            if (args[0].equalsIgnoreCase("admin")) {
+                // Check for player executing command
+                if (player == null) {
+                    sender.sendMessage("Bad console!");
+                    return true;
+                }
+
+                // Check for permission to use the command
+                if (!player.hasPermission("vd.use")) {
+                    player.sendMessage(Utils.notify(language.getString("permissionError")));
+                    return true;
+                }
+
+                player.openInventory(Inventories.createArenasInventory());
                 return true;
             }
         }

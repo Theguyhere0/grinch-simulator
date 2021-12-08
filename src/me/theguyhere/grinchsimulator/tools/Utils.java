@@ -242,6 +242,19 @@ public class Utils {
         }
     }
 
+    // Gets location data without pitch or yaw
+    public static Location getConfigLocationNoRotation(Main plugin, String path) {
+        try {
+            Location location = getConfigLocation(plugin, path);
+            assert location != null;
+            location.setPitch(0);
+            location.setYaw(0);
+            return location;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     // Convert seconds to ticks
     public static int secondsToTicks(double seconds) {
         return (int) (seconds * SECONDS_TO_TICKS);

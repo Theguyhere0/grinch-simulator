@@ -45,7 +45,7 @@ public class Utils {
 
     // Formats plugin notifications
     public static String notify(String msg) {
-        return format("&2VD: &f" + msg);
+        return format("&2[Grinch Simulator] &f" + msg);
     }
 
     // Creates an ItemStack using only material, name, and lore
@@ -252,6 +252,35 @@ public class Utils {
             return location;
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    // Gets location data without pitch
+    public static Location getConfigLocationNoPitch(Main plugin, String path) {
+        try {
+            Location location = getConfigLocation(plugin, path);
+            assert location != null;
+            location.setPitch(0);
+            return location;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // Centers location data
+    public static void centerConfigLocation(Main plugin, String path) {
+        try {
+            Location location = getConfigLocation(plugin, path);
+            assert location != null;
+            if (location.getX() > 0)
+                location.setX(((int) location.getX()) + .5);
+            else location.setX(((int) location.getX()) - .5);
+            if (location.getZ() > 0)
+                location.setZ(((int) location.getZ()) + .5);
+            else location.setZ(((int) location.getZ()) - .5);
+            setConfigurationLocation(plugin, path, location);
+            plugin.saveArenaData();
+        } catch (Exception ignored) {
         }
     }
 

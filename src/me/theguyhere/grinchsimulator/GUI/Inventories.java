@@ -4,42 +4,44 @@ import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
 import me.theguyhere.grinchsimulator.tools.Utils;
+import net.minecraft.server.v1_16_R3.BlockPosition;
+import net.minecraft.server.v1_16_R3.EntityPlayer;
+import net.minecraft.server.v1_16_R3.PacketPlayOutOpenSignEditor;
+import net.minecraft.server.v1_16_R3.TileEntitySign;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.craftbukkit.v1_16_R3.block.CraftSign;
+import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 public class Inventories {
 	// Easily alternate between different materials
-	public static final Material[] KEY_MATS = {Material.BLACK_CONCRETE, Material.WHITE_WOOL};
 	public static final Material[] INFO_BOARD_MATS = {Material.DARK_OAK_SIGN, Material.BIRCH_SIGN};
-	public static final Material[] MONSTER_MATS = {Material.SKELETON_SKULL, Material.ZOMBIE_HEAD};
-	public static final Material[] VILLAGER_MATS = {Material.WITHER_ROSE, Material.POPPY};
-	
+	private static final String CONSTRUCTION = Utils.format("&6Under Construction!");
+
 	// Menu of all the arenas
 	public static Inventory createArenasInventory() {
 		// Create inventory
 		Inventory inv = Bukkit.createInventory(null, 54,  Utils.format("&k") +
-				Utils.format("&2&lVillager Defense Arenas"));
+				Utils.format("&2&lGrinch Simulator Arenas"));
 
 		// Options to interact with all 45 possible arenas
-		for (int i = 0; i < 45; i++) {
+		for (int i = 1; i < 46; i++) {
 			// Check if arena exists, set button accordingly
-			if (ArenaManager.arenas[i] == null)
-				inv.setItem(i, Utils.createItem(Material.RED_CONCRETE,
-						Utils.format("&c&lCreate Arena " + (i + 1))));
+			if (ArenaManager.getArena(i) == null)
+				inv.setItem(i - 1, Utils.createItem(Material.RED_CONCRETE,
+						Utils.format("&c&lCreate Arena " + i)));
 			else
-				inv.setItem(i, Utils.createItem(Material.LIME_CONCRETE,
-						Utils.format("&a&lEdit " + ArenaManager.arenas[i].getName())));
+				inv.setItem(i - 1, Utils.createItem(Material.LIME_CONCRETE,
+						Utils.format("&a&lEdit " + ArenaManager.getArena(i).getName())));
 		}
 
 		// Option to set lobby location
@@ -48,11 +50,11 @@ public class Inventories {
 
 		// Option to set info hologram
 		inv.setItem(46, Utils.createItem(Material.OAK_SIGN, Utils.format("&6&lInfo Boards"),
-				Utils.format("&7Manage info boards")));
+				CONSTRUCTION));
 
 		// Option to set leaderboard hologram
 		inv.setItem(47, Utils.createItem(Material.GOLDEN_HELMET, Utils.format("&e&lLeaderboards"),
-				Utils.BUTTON_FLAGS, null, Utils.format("&7Manage leaderboards")));
+				Utils.BUTTON_FLAGS, null, CONSTRUCTION));
 
 		// Option to exit
 		inv.setItem(53, InventoryItems.exit());
@@ -396,8 +398,8 @@ public class Inventories {
 //	}
 
 	// Menu for editing an arena
-	public static  Inventory createArenaInventory(int arena) {
-		Arena arenaInstance = ArenaManager.arenas[arena];
+	public static Inventory createArenaInventory(int arena) {
+		Arena arenaInstance = ArenaManager.getArena(arena);
 		// Create inventory
 		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
 				Utils.format("&2&lEdit " + arenaInstance.getName()));
@@ -412,24 +414,18 @@ public class Inventories {
 		// Option to edit player settings
 		inv.setItem(2, Utils.createItem(Material.PLAYER_HEAD, Utils.format("&d&lPlayer Settings")));
 
-		// Option to edit mob settings
-		inv.setItem(3, Utils.createItem(Material.ZOMBIE_SPAWN_EGG, Utils.format("&2&lMob Settings")));
-
-		// Option to edit shop settings
-		inv.setItem(4, Utils.createItem(Material.GOLD_BLOCK, Utils.format("&e&lShop Settings")));
-
 		// Option to edit miscellaneous game settings
-		inv.setItem(5, Utils.createItem(Material.REDSTONE, Utils.format("&7&lGame Settings")));
+		inv.setItem(3, Utils.createItem(Material.REDSTONE, Utils.format("&7&lGame Settings")));
 
 		// Option to close the arena
 		String closed;
 		if (arenaInstance.isClosed())
 			closed = "&c&lCLOSED";
 		else closed = "&a&lOPEN";
-		inv.setItem(6, Utils.createItem(Material.NETHER_BRICK_FENCE, Utils.format("&9&lClose Arena: " + closed)));
+		inv.setItem(4, Utils.createItem(Material.NETHER_BRICK_FENCE, Utils.format("&9&lClose Arena: " + closed)));
 
 		// Option to remove arena
-		inv.setItem(7, InventoryItems.remove("ARENA"));
+		inv.setItem(5, InventoryItems.remove("ARENA"));
 
 		// Option to exit
 		inv.setItem(8, InventoryItems.exit());
@@ -441,7 +437,7 @@ public class Inventories {
 	public static Inventory createArenaConfirmInventory(int arena) {
 		// Create inventory
 		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-				Utils.format("&4&lRemove " + ArenaManager.arenas[arena].getName() + '?'));
+				Utils.format("&4&lRemove " + ArenaManager.getArena(arena).getName() + '?'));
 
 		// "No" option
 		inv.setItem(0, InventoryItems.no());
@@ -454,7 +450,7 @@ public class Inventories {
 
 //	// Menu for editing the portal and leaderboard of an arena
 //	public static Inventory createPortalInventory(int arena) {
-//		Arena arenaInstance = ArenaManager.arenas[arena];
+//		Arena arenaInstance = ArenaManager.getArena(arena);
 //
 //		// Create inventory
 //		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
@@ -526,7 +522,7 @@ public class Inventories {
 //
 	// Menu for editing the player settings of an arena
 	public static Inventory createPlayersInventory(int arena) {
-		Arena arenaInstance = ArenaManager.arenas[arena];
+		Arena arenaInstance = ArenaManager.getArena(arena);
 
 		// Create inventory
 		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
@@ -535,25 +531,19 @@ public class Inventories {
 		// Option to edit player spawn
 		inv.setItem(0, Utils.createItem(Material.END_PORTAL_FRAME, Utils.format("&5&lPlayer Spawn")));
 
-		// Option to toggle player spawn particles
-		inv.setItem(1, Utils.createItem(Material.FIREWORK_ROCKET,
-				Utils.format("&d&lSpawn Particles: " + getToggleStatus(arenaInstance.hasSpawnParticles())),
-				Utils.format("&7Particles showing where the spawn is"),
-				Utils.format("&7(Visible in-game)")));
-
 		// Option to edit waiting room
 		inv.setItem(2, Utils.createItem(Material.CLOCK, Utils.format("&b&lWaiting Room"),
 				Utils.format("&7An optional room to wait in before"), Utils.format("&7the game starts")));
 
 		// Option to edit max players
-		inv.setItem(3, Utils.createItem(Material.NETHERITE_HELMET,
+		inv.setItem(4, Utils.createItem(Material.NETHERITE_HELMET,
 				Utils.format("&4&lMaximum Players"),
 				Utils.BUTTON_FLAGS,
 				null,
 				Utils.format("&7Maximum players the game will have")));
 
 		// Option to edit min players
-		inv.setItem(4, Utils.createItem(Material.NETHERITE_BOOTS,
+		inv.setItem(6, Utils.createItem(Material.NETHERITE_BOOTS,
 				Utils.format("&2&lMinimum Players"),
 				Utils.BUTTON_FLAGS,
 				null,
@@ -565,97 +555,97 @@ public class Inventories {
 		return inv;
 	}
 
-//	// Menu for editing the player spawn of an arena
-//	public static Inventory createPlayerSpawnInventory(int arena) {
-//		Arena arenaInstance = ArenaManager.arenas[arena];
-//
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-//				Utils.format("&d&lPlayer Spawn: " + arenaInstance.getName()));
-//
-//		// Option to create or relocate player spawn
-//		if (arenaInstance.getPlayerSpawn() != null)
-//			inv.setItem(0, InventoryItems.relocate("Spawn"));
-//		else inv.setItem(0, InventoryItems.create("Spawn"));
-//
-//		// Option to teleport to player spawn
-//		inv.setItem(2, InventoryItems.teleport("Spawn"));
-//
-//		// Option to center the player spawn
-//		inv.setItem(4, InventoryItems.center("Spawn"));
-//
-//		// Option to remove player spawn
-//		inv.setItem(6, InventoryItems.remove("SPAWN"));
-//
-//		// Option to exit
-//		inv.setItem(8, InventoryItems.exit());
-//
-//		return inv;
-//	}
-//
-//	// Confirmation menu for removing player spawn
-//	public static Inventory createSpawnConfirmInventory(int arena) {
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-//				Utils.format("&4&lRemove Spawn?"));
-//
-//		// "No" option
-//		inv.setItem(0, InventoryItems.no());
-//
-//		// "Yes" option
-//		inv.setItem(8, InventoryItems.yes());
-//
-//		return inv;
-//	}
+	// Menu for editing the player spawn of an arena
+	public static Inventory createPlayerSpawnInventory(int arena) {
+		Arena arenaInstance = ArenaManager.getArena(arena);
 
-//	// Menu for editing the waiting room of an arena
-//	public static Inventory createWaitingRoomInventory(int arena) {
-//		Arena arenaInstance = ArenaManager.arenas[arena];
-//
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-//				Utils.format("&b&lWaiting Room: " + arenaInstance.getName()));
-//
-//		// Option to create waiting room
-//		if (arenaInstance.getWaitingRoom() == null)
-//			inv.setItem(0, InventoryItems.create("Waiting Room"));
-//		else inv.setItem(0, InventoryItems.relocate("Waiting Room"));
-//
-//		// Option to teleport to waiting room
-//		inv.setItem(2, InventoryItems.teleport("Waiting Room"));
-//
-//		// Option to center the waiting room
-//		inv.setItem(4, InventoryItems.center("Waiting Room"));
-//
-//		// Option to remove waiting room
-//		inv.setItem(6, InventoryItems.remove("WAITING ROOM"));
-//
-//		// Option to exit
-//		inv.setItem(8, InventoryItems.exit());
-//
-//		return inv;
-//	}
-//
-//	// Confirmation menu for removing waiting room
-//	public static Inventory createWaitingConfirmInventory(int arena) {
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-//				Utils.format("&4&lRemove Waiting Room?"));
-//
-//		// "No" option
-//		inv.setItem(0, InventoryItems.no());
-//
-//		// "Yes" option
-//		inv.setItem(8, InventoryItems.yes());
-//
-//		return inv;
-//	}
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&d&lPlayer Spawn: " + arenaInstance.getName()));
+
+		// Option to create or relocate player spawn
+		if (arenaInstance.getPlayerSpawn() != null)
+			inv.setItem(0, InventoryItems.relocate("Spawn"));
+		else inv.setItem(0, InventoryItems.create("Spawn"));
+
+		// Option to teleport to player spawn
+		inv.setItem(2, InventoryItems.teleport("Spawn"));
+
+		// Option to center the player spawn
+		inv.setItem(4, InventoryItems.center("Spawn"));
+
+		// Option to remove player spawn
+		inv.setItem(6, InventoryItems.remove("SPAWN"));
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Confirmation menu for removing player spawn
+	public static Inventory createSpawnConfirmInventory(int arena) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&4&lRemove Spawn?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
+
+	// Menu for editing the waiting room of an arena
+	public static Inventory createWaitingRoomInventory(int arena) {
+		Arena arenaInstance = ArenaManager.getArena(arena);
+
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&b&lWaiting Room: " + arenaInstance.getName()));
+
+		// Option to create waiting room
+		if (arenaInstance.getWaitingRoom() == null)
+			inv.setItem(0, InventoryItems.create("Waiting Room"));
+		else inv.setItem(0, InventoryItems.relocate("Waiting Room"));
+
+		// Option to teleport to waiting room
+		inv.setItem(2, InventoryItems.teleport("Waiting Room"));
+
+		// Option to center the waiting room
+		inv.setItem(4, InventoryItems.center("Waiting Room"));
+
+		// Option to remove waiting room
+		inv.setItem(6, InventoryItems.remove("WAITING ROOM"));
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Confirmation menu for removing waiting room
+	public static Inventory createWaitingConfirmInventory(int arena) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&4&lRemove Waiting Room?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
 
 	// Menu for changing max players in an arena
 	public static Inventory createMaxPlayerInventory(int arena) {
 		// Create inventory
 		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-				Utils.format("&4&lMaximum Players: " + ArenaManager.arenas[arena].getMaxPlayers()));
+				Utils.format("&4&lMaximum Players: " + ArenaManager.getArena(arena).getMaxPlayers()));
 
 		// Option to decrease
 		for (int i = 0; i < 4; i++)
@@ -675,7 +665,7 @@ public class Inventories {
 	public static Inventory createMinPlayerInventory(int arena) {
 		// Create inventory
 		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-				Utils.format("&2&lMinimum Players: " + ArenaManager.arenas[arena].getMinPlayers()));
+				Utils.format("&2&lMinimum Players: " + ArenaManager.getArena(arena).getMinPlayers()));
 
 		// Option to decrease
 		for (int i = 0; i < 4; i++)
@@ -693,51 +683,39 @@ public class Inventories {
 
 	// Menu for editing the game settings of an arena
 	public static Inventory createGameSettingsInventory(int arena) {
-		Arena arenaInstance = ArenaManager.arenas[arena];
+		Arena arenaInstance = ArenaManager.getArena(arena);
 
 		// Create inventory
-		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 18, Utils.format("&k") +
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
 				Utils.format("&8&lGame Settings: " + arenaInstance.getName()));
 
-		// Option to change max waves
-		inv.setItem(0, Utils.createItem(Material.NETHERITE_SWORD,
-				Utils.format("&3&lMax Waves"),
-				Utils.BUTTON_FLAGS,
-				null));
-
 		// Option to wave time limit
-		inv.setItem(1, Utils.createItem(Material.CLOCK, Utils.format("&2&lWave Time Limit")));
+		inv.setItem(0, Utils.createItem(Material.CLOCK, Utils.format("&2&lWave Time Limit")));
 
 		// Option to edit difficulty label
-		inv.setItem(4, Utils.createItem(Material.NAME_TAG, Utils.format("&6&lDifficulty Label")));
+		inv.setItem(1, Utils.createItem(Material.NAME_TAG, Utils.format("&6&lDifficulty Label")));
 
 		// Option to adjust overall difficulty multiplier
-		inv.setItem(5, Utils.createItem(Material.TURTLE_HELMET,
+		inv.setItem(2, Utils.createItem(Material.TURTLE_HELMET,
 				Utils.format("&4&lDifficulty Multiplier"),
 				Utils.BUTTON_FLAGS,
 				null,
 				Utils.format("&7Determines difficulty increase rate")));
 
-		// Option to set arena bounds
-		inv.setItem(11, Utils.createItem(Material.BEDROCK, Utils.format("&4&lArena Bounds"),
-				Utils.format("&7Bounds determine where players are"),
-				Utils.format("&7allowed to go and where the game will"),
-				Utils.format("&7function. Avoid building past arena bounds.")));
-
 		// Option to edit sounds
-		inv.setItem(14, Utils.createItem(Material.MUSIC_DISC_13,
+		inv.setItem(3, Utils.createItem(Material.MUSIC_DISC_13,
 				Utils.format("&d&lSounds"),
 				Utils.BUTTON_FLAGS,
 				null));
 
 		// Option to copy game settings from another arena or a preset
-		inv.setItem(15, Utils.createItem(Material.WRITABLE_BOOK,
+		inv.setItem(4, Utils.createItem(Material.WRITABLE_BOOK,
 				Utils.format("&f&lCopy Game Settings"),
 				Utils.format("&7Copy settings of another arena or"),
 				Utils.format("&7choose from a menu of presets")));
 
 		// Option to exit
-		inv.setItem(17, InventoryItems.exit());
+		inv.setItem(8, InventoryItems.exit());
 
 		return inv;
 	}
@@ -747,11 +725,11 @@ public class Inventories {
 		Inventory inv;
 
 		// Create inventory
-		if (ArenaManager.arenas[arena].getWaveTimeLimit() < 0)
+		if (ArenaManager.getArena(arena).getWaveTimeLimit() < 0)
 			inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
 					Utils.format("&2&lWave Time Limit: Unlimited"));
 		else inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-				Utils.format("&2&lWave Time Limit: " + ArenaManager.arenas[arena].getWaveTimeLimit()));
+				Utils.format("&2&lWave Time Limit: " + ArenaManager.getArena(arena).getWaveTimeLimit()));
 
 		// Option to decrease
 		for (int i = 0; i < 3; i++)
@@ -775,7 +753,7 @@ public class Inventories {
 
 	// Menu for changing the difficulty label of an arena
 	public static Inventory createDifficultyLabelInventory(int arena) {
-		String label = ArenaManager.arenas[arena].getDifficultyLabel();
+		String label = ArenaManager.getArena(arena).getDifficultyLabel();
 		switch (label) {
 			case "Easy":
 				label = "&a&lEasy";
@@ -818,119 +796,13 @@ public class Inventories {
 		return inv;
 	}
 
-	// Menu for selecting arena bound corners
-	public static Inventory createBoundsInventory(int arena) {
-		Arena arenaInstance = ArenaManager.arenas[arena];
-
-		// Create inventory
-		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-				Utils.format("&4&lArena Bounds: " + arenaInstance.getName()));
-
-		// Option to interact with corner 1
-		inv.setItem(0, Utils.createItem(Material.TORCH, Utils.format("&b&lCorner 1: " +
-				(arenaInstance.getCorner1() == null ? "&c&lMissing" : "&a&lSet"))));
-
-		// Option to interact with corner 2
-		inv.setItem(3, Utils.createItem(Material.SOUL_TORCH, Utils.format("&9&lCorner 2: " +
-				(arenaInstance.getCorner2() == null ? "&c&lMissing" : "&a&lSet"))));
-
-		// Option to toggle arena border particles
-		inv.setItem(6, Utils.createItem(Material.FIREWORK_ROCKET, Utils.format("&4&lBorder Particles: " +
-				getToggleStatus(arenaInstance.hasBorderParticles()))));
-
-		// Option to exit
-		inv.setItem(8, InventoryItems.exit());
-
-		return inv;
-	}
-
-	// Menu for editing corner 1 of an arena
-	public static Inventory createCorner1Inventory(int arena) {
-		Arena arenaInstance = ArenaManager.arenas[arena];
-
-		// Create inventory
-		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-				Utils.format("&b&lCorner 1: " + arenaInstance.getName()));
-
-		// Option to create waiting room
-		if (arenaInstance.getCorner1() == null)
-			inv.setItem(0, InventoryItems.create("Corner 1"));
-		else inv.setItem(0, InventoryItems.relocate("Corner 1"));
-
-		// Option to teleport to waiting room
-		inv.setItem(2, InventoryItems.teleport("Corner 1"));
-
-		// Option to remove waiting room
-		inv.setItem(4, InventoryItems.remove("CORNER 1"));
-
-		// Option to exit
-		inv.setItem(8, InventoryItems.exit());
-
-		return inv;
-	}
-
-	// Confirmation menu for removing corner 1
-	public static Inventory createCorner1ConfirmInventory(int arena) {
-		// Create inventory
-		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-				Utils.format("&4&lRemove Corner 1?"));
-
-		// "No" option
-		inv.setItem(0, InventoryItems.no());
-
-		// "Yes" option
-		inv.setItem(8, InventoryItems.yes());
-
-		return inv;
-	}
-
-	// Menu for editing corner 2 of an arena
-	public static Inventory createCorner2Inventory(int arena) {
-		Arena arenaInstance = ArenaManager.arenas[arena];
-
-		// Create inventory
-		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-				Utils.format("&9&lCorner 2: " + arenaInstance.getName()));
-
-		// Option to create waiting room
-		if (arenaInstance.getCorner2() == null)
-			inv.setItem(0, InventoryItems.create("Corner 2"));
-		else inv.setItem(0, InventoryItems.relocate("Corner 2"));
-
-		// Option to teleport to waiting room
-		inv.setItem(2, InventoryItems.teleport("Corner 2"));
-
-		// Option to remove waiting room
-		inv.setItem(4, InventoryItems.remove("CORNER 2"));
-
-		// Option to exit
-		inv.setItem(8, InventoryItems.exit());
-
-		return inv;
-	}
-
-	// Confirmation menu for removing corner 2
-	public static Inventory createCorner2ConfirmInventory(int arena) {
-		// Create inventory
-		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-				Utils.format("&4&lRemove Corner 2?"));
-
-		// "No" option
-		inv.setItem(0, InventoryItems.no());
-
-		// "Yes" option
-		inv.setItem(8, InventoryItems.yes());
-
-		return inv;
-	}
-
 	// Menu for editing the sounds of an arena
 	public static Inventory createSoundsInventory(int arena) {
-		Arena arenaInstance = ArenaManager.arenas[arena];
+		Arena arenaInstance = ArenaManager.getArena(arena);
 
 		// Create inventory
 		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-				Utils.format("&d&lSounds: " + ArenaManager.arenas[arena].getName()));
+				Utils.format("&d&lSounds: " + ArenaManager.getArena(arena).getName()));
 
 		// Option to edit win sound
 		inv.setItem(0, Utils.createItem(Material.MUSIC_DISC_PIGSTEP,
@@ -977,9 +849,9 @@ public class Inventories {
 	public static Inventory createWaitSoundInventory(int arena) {
 		// Create inventory
 		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 18, Utils.format("&k") +
-				Utils.format("&6&lWaiting Sound: " + ArenaManager.arenas[arena].getWaitingSoundName()));
+				Utils.format("&6&lWaiting Sound: " + ArenaManager.getArena(arena).getWaitingSoundName()));
 
-		Arena arenaInstance = ArenaManager.arenas[arena];
+		Arena arenaInstance = ArenaManager.getArena(arena);
 
 		// Sound options
 		inv.setItem(0, arenaInstance.getWaitingSoundButton(0));
@@ -1009,17 +881,17 @@ public class Inventories {
 				Utils.format("&8&lCopy Game Settings"));
 
 		// Options to choose any of the 45 possible arenas
-		for (int i = 0; i < 45; i++) {
+		for (int i = 1; i <= 45; i++) {
 			// Check if arena exists, set button accordingly
-			if (ArenaManager.arenas[i] == null)
-				inv.setItem(i, Utils.createItem(Material.BLACK_CONCRETE,
-						Utils.format("&c&lArena " + (i + 1) + " not available")));
+			if (ArenaManager.getArena(i) == null)
+				inv.setItem(i - 1, Utils.createItem(Material.BLACK_CONCRETE,
+						Utils.format("&c&lArena " + i  + " not available")));
 			else if (i == arena)
-				inv.setItem(i, Utils.createItem(Material.GRAY_GLAZED_TERRACOTTA,
-						Utils.format("&6&l" + ArenaManager.arenas[i].getName())));
+				inv.setItem(i - 1, Utils.createItem(Material.GRAY_GLAZED_TERRACOTTA,
+						Utils.format("&6&l" + ArenaManager.getArena(i).getName())));
 			else
-				inv.setItem(i, Utils.createItem(Material.WHITE_CONCRETE,
-						Utils.format("&a&lCopy " + ArenaManager.arenas[i].getName())));
+				inv.setItem(i - 1, Utils.createItem(Material.WHITE_CONCRETE,
+						Utils.format("&a&lCopy " + ArenaManager.getArena(i).getName())));
 		}
 
 		// Easy preset
@@ -1105,10 +977,6 @@ public class Inventories {
 				Utils.format("&9&lWave time limit: &9" + limit),
 				Utils.format("&7The time limit for each wave before"), Utils.format("&7the game ends")));
 
-		// Player spawn particles
-		inv.setItem(19, Utils.createItem(Material.FIREWORK_ROCKET,
-				Utils.format("&e&lPlayer Spawn Particles: " + getToggleStatus(arena.hasSpawnParticles()))));
-
 //		// Arena records
 //		List<String> records = new ArrayList<>();
 //		arena.getSortedDescendingRecords().forEach(arenaRecord -> {
@@ -1132,25 +1000,25 @@ public class Inventories {
 		return inv;
 	}
 
-//	// Shows sign GUI to name arena
-//	public static void nameArena(Player player, Arena arena) {
-//		Location location = player.getLocation();
-//		location.setY(0);
-//		BlockPosition blockPosition = new BlockPosition(location.getX(), location.getY(), location.getZ());
-//		player.sendBlockChange(location, Bukkit.createBlockData(Material.OAK_SIGN));
-//
-//		TileEntitySign sign = new TileEntitySign();
-//		sign.setPosition(blockPosition);
-//		sign.lines[0] = CraftSign.sanitizeLines(new String[]{String.format("Rename Arena %d:", arena.getArena())})[0];
-//		sign.lines[1] = CraftSign.sanitizeLines(new String[]{Utils.format("===============")})[0];
-//		sign.lines[3] = CraftSign.sanitizeLines(new String[]{Utils.format("===============")})[0];
-//		sign.lines[2] = CraftSign.sanitizeLines(new String[]{arena.getName()})[0];
-//		sign.update();
-//
-//		EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
-//		entityPlayer.playerConnection.sendPacket(sign.getUpdatePacket());
-//		entityPlayer.playerConnection.sendPacket(new PacketPlayOutOpenSignEditor(blockPosition));
-//	}
+	// Shows sign GUI to name arena
+	public static void nameArena(Player player, Arena arena) {
+		Location location = player.getLocation();
+		location.setY(0);
+		BlockPosition blockPosition = new BlockPosition(location.getX(), location.getY(), location.getZ());
+		player.sendBlockChange(location, Bukkit.createBlockData(Material.OAK_SIGN));
+
+		TileEntitySign sign = new TileEntitySign();
+		sign.setPosition(blockPosition);
+		sign.lines[0] = CraftSign.sanitizeLines(new String[]{String.format("Rename Arena %d:", arena.getArena())})[0];
+		sign.lines[1] = CraftSign.sanitizeLines(new String[]{Utils.format("===============")})[0];
+		sign.lines[3] = CraftSign.sanitizeLines(new String[]{Utils.format("===============")})[0];
+		sign.lines[2] = CraftSign.sanitizeLines(new String[]{arena.getName()})[0];
+		sign.update();
+
+		EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
+		entityPlayer.playerConnection.sendPacket(sign.getUpdatePacket());
+		entityPlayer.playerConnection.sendPacket(new PacketPlayOutOpenSignEditor(blockPosition));
+	}
 
 	// Easy way to get a string for a toggle status
 	private static String getToggleStatus(boolean status) {

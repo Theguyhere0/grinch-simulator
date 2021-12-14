@@ -43,12 +43,46 @@ public class Commands implements CommandExecutor {
                 }
 
                 // Check for permission to use the command
-                if (!player.hasPermission("vd.use")) {
+                if (!player.hasPermission("grinch.use")) {
                     player.sendMessage(Utils.notify(language.getString("permissionError")));
                     return true;
                 }
 
                 player.openInventory(Inventories.createArenasInventory());
+                return true;
+            }
+
+            // Change plugin debug level
+            if (args[0].equalsIgnoreCase("debug")) {
+                // Check for permission to use the command
+                if (player != null && !player.hasPermission("grinch.admin")) {
+                    player.sendMessage(Utils.notify(language.getString("permissionError")));
+                    return true;
+                }
+
+                // Check for correct format
+                if (args.length != 2) {
+                    if (player != null)
+                        player.sendMessage(Utils.notify("&cCommand format: /grinch debug [debug level (0-3)]"));
+                    else Utils.debugError("Command format: /grinch debug [debug level (0-3)]", 0);
+                    return true;
+                }
+
+                // Set debug level
+                try {
+                    Main.setDebugLevel(Integer.parseInt(args[1]));
+                } catch (Exception e) {
+                    if (player != null)
+                        player.sendMessage(Utils.notify("&cCommand format: /grinch debug [debug level (0-3)]"));
+                    else Utils.debugError("Command format: /grinch debug [debug level (0-3)]", 0);
+                    return true;
+                }
+
+                // Notify
+                if (player != null)
+                    player.sendMessage(Utils.notify("&aDebug level set to " + args[1] + "."));
+                else Utils.debugInfo("Debug level set to " + args[1] + ".", 0);
+
                 return true;
             }
         }

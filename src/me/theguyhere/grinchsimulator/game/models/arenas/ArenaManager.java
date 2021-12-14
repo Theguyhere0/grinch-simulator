@@ -2,21 +2,16 @@ package me.theguyhere.grinchsimulator.game.models.arenas;
 
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
-import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
 import me.theguyhere.grinchsimulator.tools.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.*;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 public class ArenaManager {
 	private final Main plugin;
 
 	// Tracks arenas, info boards, and leaderboards for the game
-	public static Arena[] arenas = new Arena[45];
+	private static final Arena[] arenas = new Arena[45];
 //	public static InfoBoard[] infoBoards = new InfoBoard[8];
 //	public static Map<String, Leaderboard> leaderboards = new HashMap<>();
 
@@ -25,10 +20,11 @@ public class ArenaManager {
 	public ArenaManager(Main plugin) {
 		this.plugin = plugin;
 
+		// Gather arena data
 		Objects.requireNonNull(plugin.getArenaData().getConfigurationSection("")).getKeys(false)
 				.forEach(path -> {
 			if (path.charAt(0) == 'a' && path.length() < 4)
-				arenas[Integer.parseInt(path.substring(1))] = new Arena(plugin,
+				arenas[Integer.parseInt(path.substring(1)) - 1] = new Arena(plugin,
 						Integer.parseInt(path.substring(1)),
 						new Tasks(plugin, Integer.parseInt(path.substring(1))));
 		});
@@ -51,6 +47,18 @@ public class ArenaManager {
 //					}
 //				});
 		setLobby(Utils.getConfigLocation(plugin, "lobby"));
+	}
+
+	public static Arena getArena(int id) {
+		return arenas[id - 1];
+	}
+
+	public static Arena[] getArenas() {
+		return arenas;
+	}
+
+	public static void setArena(int id, Arena arena) {
+		arenas[id - 1] = arena;
 	}
 
 //	/**

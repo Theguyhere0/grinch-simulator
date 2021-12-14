@@ -42,7 +42,7 @@ public class Tasks {
 	public final Runnable waiting = new Runnable() {
 		@Override
 		public void run() {
-			ArenaManager.arenas[arena].getPlayers().forEach(player ->
+			ArenaManager.getArena(arena).getPlayers().forEach(player ->
 				player.getPlayer().sendMessage(Utils.notify(plugin.getLanguageData().getString("waiting"))));
 			Utils.debugInfo("Arena " + arena + " is currently waiting for players to start.", 2);
 		}
@@ -53,7 +53,7 @@ public class Tasks {
 		@Override
 		public void run() {
 			try {
-				ArenaManager.arenas[arena].getPlayers().forEach(player ->
+				ArenaManager.getArena(arena).getPlayers().forEach(player ->
 						player.getPlayer().sendMessage(Utils.notify(String.format(
 								Objects.requireNonNull(plugin.getLanguageData().getString("minutesLeft")), 2))));
 			} catch (Exception e) {
@@ -69,7 +69,7 @@ public class Tasks {
 		@Override
 		public void run() {
 			try {
-				ArenaManager.arenas[arena].getPlayers().forEach(player ->
+				ArenaManager.getArena(arena).getPlayers().forEach(player ->
 						player.getPlayer().sendMessage(Utils.notify(String.format(
 								Objects.requireNonNull(plugin.getLanguageData().getString("minutesLeft")), 1))));
 			} catch (Exception e) {
@@ -85,7 +85,7 @@ public class Tasks {
 		@Override
 		public void run() {
 			try {
-				ArenaManager.arenas[arena].getPlayers().forEach(player ->
+				ArenaManager.getArena(arena).getPlayers().forEach(player ->
 						player.getPlayer().sendMessage(Utils.notify(String.format(
 								Objects.requireNonNull(plugin.getLanguageData().getString("secondsLeft")), 30))));
 			} catch (Exception e) {
@@ -101,7 +101,7 @@ public class Tasks {
 		@Override
 		public void run() {
 			try {
-				ArenaManager.arenas[arena].getPlayers().forEach(player ->
+				ArenaManager.getArena(arena).getPlayers().forEach(player ->
 						player.getPlayer().sendMessage(Utils.notify(String.format(
 								Objects.requireNonNull(plugin.getLanguageData().getString("secondsLeft")), 10))));
 			} catch (Exception e) {
@@ -117,7 +117,7 @@ public class Tasks {
 		@Override
 		public void run() {
 			try {
-				ArenaManager.arenas[arena].getPlayers().forEach(player -> {
+				ArenaManager.getArena(arena).getPlayers().forEach(player -> {
 					player.getPlayer().sendMessage(Utils.notify(plugin.getLanguageData().getString("maxCapacity")));
 					player.getPlayer().sendMessage(Utils.notify(String.format(
 							Objects.requireNonNull(plugin.getLanguageData().getString("secondsLeft")), 10)));
@@ -136,7 +136,7 @@ public class Tasks {
 		@Override
 		public void run() {
 			try {
-				ArenaManager.arenas[arena].getPlayers().forEach(player ->
+				ArenaManager.getArena(arena).getPlayers().forEach(player ->
 						player.getPlayer().sendMessage(Utils.notify(String.format(
 								Objects.requireNonNull(plugin.getLanguageData().getString("secondsLeft")), 5))));
 			} catch (Exception e) {
@@ -153,7 +153,7 @@ public class Tasks {
 
 		@Override
 		public void run() {
-			Arena arenaInstance = ArenaManager.arenas[arena];
+			Arena arenaInstance = ArenaManager.getArena(arena);
 
 			// Set arena to active, reset villager and enemy count, set new game ID, clear arena
 			arenaInstance.setStatus(ArenaStatus.ACTIVE);
@@ -173,12 +173,6 @@ public class Tasks {
 			if (arenaInstance.getWaitingSound() != null)
 				arenaInstance.getPlayers().forEach(player ->
 						player.getPlayer().stopSound(arenaInstance.getWaitingSound()));
-
-			// Start particles if enabled
-//			if (arenaInstance.hasSpawnParticles())
-//				arenaInstance.startSpawnParticles();
-			if (arenaInstance.hasBorderParticles())
-				arenaInstance.startBorderParticles();
 
 //			arenaInstance.getActives().forEach(player -> {
 //				// Give all players starting items
@@ -203,7 +197,7 @@ public class Tasks {
 //
 //		@Override
 //		public void run() {
-//			Arena arenaInstance = ArenaManager.arenas[arena];
+//			Arena arenaInstance = ArenaManager.getArena(arena);
 //			FileConfiguration language = plugin.getLanguageData();
 //
 //			// Refresh the scoreboards
@@ -339,7 +333,7 @@ public class Tasks {
 //	public final Runnable reset = new Runnable() {
 //		@Override
 //		public void run() {
-//			Arena arenaInstance = ArenaManager.arenas[arena];
+//			Arena arenaInstance = ArenaManager.getArena(arena);
 //
 //			// Update data
 //			arenaInstance.setStatus(ArenaStatus.WAITING);
@@ -366,7 +360,7 @@ public class Tasks {
 //	public final Runnable updateBoards = new Runnable() {
 //		@Override
 //		public void run() {
-//			ArenaManager.arenas[arena].getActives().forEach(ArenaManager::createBoard);
+//			ArenaManager.getArena(arena).getActives().forEach(ArenaManager::createBoard);
 //		}
 //	};
 
@@ -380,7 +374,7 @@ public class Tasks {
 //
 //		@Override
 //		public void run() {
-//			arenaInstance = ArenaManager.arenas[arena];
+//			arenaInstance = ArenaManager.getArena(arena);
 //
 //			// Add time limit bar if it doesn't exist
 //			if (arenaInstance.getTimeLimitBar() == null) {

@@ -6,23 +6,20 @@ import me.theguyhere.grinchsimulator.exceptions.PlayerNotFoundException;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
 import me.theguyhere.grinchsimulator.tools.Utils;
-import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.*;
 import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.BoundingBox;
 
-import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A class managing data about a Villager Defense arena.
@@ -42,8 +39,6 @@ public class Arena {
     private ArenaStatus status;
     /** The ID of the game currently in progress.*/
     private int gameID;
-    /** ID of task managing player spawn particles.*/
-    private int playerParticlesID = 0;
     /** ID of task managing corner particles.*/
     private int cornerParticlesID = 0;
     /** A list of players in the arena.*/
@@ -118,10 +113,6 @@ public class Arena {
             setWaveFinishSound(true);
             setWaitingSound(14);
         }
-        
-        // Set default particle toggles
-        if (!config.contains(path + ".particles.spawn"))
-            setSpawnParticles(true);
 
 //        // Refresh portal
 //        if (getPortalLocation() != null)
@@ -473,222 +464,46 @@ public class Arena {
 //        Utils.setConfigurationLocation(plugin, path + ".arenaBoard", null);
 //    }
 
-//    /**
-//     * Refreshes the player spawn of the arena.
-//     */
-//    public void refreshPlayerSpawn() {
-//        // Prevent refreshing player spawn when arena is open
-//        if (!isClosed())
-//            return;
-//
-//        // Close off any particles if they are on
-//        if (playerSpawn != null && playerSpawn.isOn())
-//            playerSpawn.turnOffIndicator();
-//
-//        // Attempt to fetch new player spawn
-//        try {
-//            playerSpawn = new ArenaSpawn(
-//                    Objects.requireNonNull(Utils.getConfigLocation(plugin, path + ".spawn")),
-//                    ArenaSpawnType.PLAYER,
-//                    0);
-//        } catch (InvalidLocationException | NullPointerException e) {
-//            playerSpawn = null;
-//        }
-//    }
-//
-//    public ArenaSpawn getPlayerSpawn() {
-//        return playerSpawn;
-//    }
-
-//    /**
-//     * Writes the new player spawn location of the arena into the arena file.
-//     * @param location New player spawn location.
-//     */
-//    public void setPlayerSpawn(Location location) {
-//        Utils.setConfigurationLocation(plugin, path + ".spawn", location);
-//        refreshPlayerSpawn();
-//    }
-//
-//    /**
-//     * Centers the player spawn location of the arena along the x and z axis.
-//     */
-//    public void centerPlayerSpawn() {
-//        Utils.centerConfigLocation(plugin, path + ".spawn");
-//        refreshPlayerSpawn();
-//    }
-//
-//    /**
-//     * Retrieves the waiting room location of the arena from the arena file.
-//     * @return Player spawn location.
-//     */
-//    public Location getWaitingRoom() {
-//        return Utils.getConfigLocation(plugin, path + ".waiting");
-//    }
-//
-//    /**
-//     * Writes the new waiting room location of the arena into the arena file.
-//     * @param location New player spawn location.
-//     */
-//    public void setWaitingRoom(Location location) {
-//        Utils.setConfigurationLocation(plugin, path + ".waiting", location);
-//        plugin.saveArenaData();
-//    }
-//
-//    /**
-//     * Centers the waiting room location of the arena along the x and z axis.
-//     */
-//    public void centerWaitingRoom() {
-//        Utils.centerConfigLocation(plugin, path + ".waiting");
-//    }
-    
-    public boolean hasSpawnParticles() {
-        return config.getBoolean(path + ".particles.spawn");
+    public Location getPlayerSpawn() {
+        return Utils.getConfigLocationNoPitch(plugin, path + ".spawn");
     }
 
-    public void setSpawnParticles(boolean bool) {
-        config.set(path + ".particles.spawn", bool);
-        plugin.saveArenaData();
+    /**
+     * Writes the new player spawn location of the arena into the arena file.
+     * @param location New player spawn location.
+     */
+    public void setPlayerSpawn(Location location) {
+        Utils.setConfigurationLocation(plugin, path + ".spawn", location);
     }
 
-//    public void startSpawnParticles() {
-//        if (getPlayerSpawn() == null)
-//            return;
-//
-//        if (isClosed())
-//            getPlayerSpawn().turnOnIndicator();
-//
-//        if (playerParticlesID != 0)
-//            return;
-//
-//        playerParticlesID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-//            double var = 0;
-//            double var2 = 0;
-//            Location first, second;
-//
-//            @Override
-//            public void run() {
-//                try {
-//                    // Update particle locations
-//                    var += Math.PI / 12;
-//                    var2 -= Math.PI / 12;
-//                    first = getPlayerSpawn().getLocation().clone().add(Math.cos(var), Math.sin(var) + 1, Math.sin(var));
-//                    second = getPlayerSpawn().getLocation().clone().add(Math.cos(var2 + Math.PI), Math.sin(var2) + 1,
-//                            Math.sin(var2 + Math.PI));
-//
-//                    // Spawn particles
-//                    Objects.requireNonNull(getPlayerSpawn().getLocation().getWorld())
-//                            .spawnParticle(Particle.FLAME, first, 0);
-//                    getPlayerSpawn().getLocation().getWorld().spawnParticle(Particle.FLAME, second, 0);
-//                } catch (Exception e) {
-//                    Utils.debugError(String.format("Player spawn particle generation error for arena %d.", arena),
-//                            2);
-//                }
-//            }
-//        }, 0 , 2);
-//    }
-//
-//    public void cancelSpawnParticles() {
-//        if (getPlayerSpawn() == null)
-//            return;
-//
-//        getPlayerSpawn().turnOffIndicator();
-//
-//        if (playerParticlesID != 0)
-//            Bukkit.getScheduler().cancelTask(playerParticlesID);
-//        playerParticlesID = 0;
-//    }
-    
-    public boolean hasBorderParticles() {
-        return config.getBoolean(path + ".particles.border");
+    /**
+     * Centers the player spawn location of the arena along the x and z axis.
+     */
+    public void centerPlayerSpawn() {
+        Utils.centerConfigLocation(plugin, path + ".spawn");
     }
 
-    public void setBorderParticles(boolean bool) {
-        config.set(path + ".particles.border", bool);
-        plugin.saveArenaData();
+    /**
+     * Retrieves the waiting room location of the arena from the arena file.
+     * @return Player spawn location.
+     */
+    public Location getWaitingRoom() {
+        return Utils.getConfigLocation(plugin, path + ".waiting");
     }
 
-    public void startBorderParticles() {
-        if (cornerParticlesID == 0 && getCorner1() != null && getCorner2() != null)
-            cornerParticlesID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-                World world;
-                Location first, second;
-
-                @Override
-                public void run() {
-                    // Spawn particles
-                    try {
-                        world = getCorner1().getWorld();
-                        assert world != null;
-
-                        first = new Location(world, Math.max(getCorner1().getX(), getCorner2().getX()),
-                                Math.max(getCorner1().getY(), getCorner2().getY()),
-                                Math.max(getCorner1().getZ(), getCorner2().getZ()));
-                        second = new Location(world, Math.min(getCorner1().getX(), getCorner2().getX()),
-                                Math.min(getCorner1().getY(), getCorner2().getY()),
-                                Math.min(getCorner1().getZ(), getCorner2().getZ()));
-
-                        for (double x = second.getX(); x <= first.getX(); x += 5)
-                            for (double y = second.getY(); y <= first.getY(); y += 5)
-                                world.spawnParticle(Particle.BARRIER, x, y, first.getZ(), 0);
-                        for (double x = second.getX(); x <= first.getX(); x += 5)
-                            for (double y = second.getY(); y <= first.getY(); y += 5)
-                                world.spawnParticle(Particle.BARRIER, x, y, second.getZ(), 0);
-                        for (double x = second.getX(); x <= first.getX(); x += 5)
-                            for (double z = second.getZ(); z <= first.getZ(); z += 5)
-                                world.spawnParticle(Particle.BARRIER, x, first.getY(), z, 0);
-                        for (double x = second.getX(); x <= first.getX(); x += 5)
-                            for (double z = second.getZ(); z <= first.getZ(); z += 5)
-                                world.spawnParticle(Particle.BARRIER, x, second.getY(), z, 0);
-                        for (double z = second.getZ(); z <= first.getZ(); z += 5)
-                            for (double y = second.getY(); y <= first.getY(); y += 5)
-                                world.spawnParticle(Particle.BARRIER, first.getX(), y, z, 0);
-                        for (double z = second.getZ(); z <= first.getZ(); z += 5)
-                            for (double y = second.getY(); y <= first.getY(); y += 5)
-                                world.spawnParticle(Particle.BARRIER, second.getX(), y, z, 0);
-
-                    } catch (Exception e) {
-                        Utils.debugError(String.format("Border particle generation error for arena %d.", arena),
-                                1);
-                    }
-                }
-            }, 0 , 20);
+    /**
+     * Writes the new waiting room location of the arena into the arena file.
+     * @param location New player spawn location.
+     */
+    public void setWaitingRoom(Location location) {
+        Utils.setConfigurationLocation(plugin, path + ".waiting", location);
     }
 
-    public void cancelBorderParticles() {
-        if (cornerParticlesID != 0)
-            Bukkit.getScheduler().cancelTask(cornerParticlesID);
-        cornerParticlesID = 0;
-    }
-
-    private void checkClosedParticles() {
-        if (isClosed()) {
-//            startSpawnParticles();
-            startBorderParticles();
-        } else {
-//            cancelSpawnParticles();
-            cancelBorderParticles();
-        }
-    }
-    
-    public Location getCorner1() {
-        return Utils.getConfigLocationNoRotation(plugin, path + ".corner1");
-    }
-
-    public void setCorner1(Location location) {
-        Utils.setConfigurationLocation(plugin, path + ".corner1", location);
-    }
-
-    public Location getCorner2() {
-        return Utils.getConfigLocationNoRotation(plugin, path + ".corner2");
-    }
-
-    public void setCorner2(Location location) {
-        Utils.setConfigurationLocation(plugin, path + ".corner2", location);
-    }
-
-    public BoundingBox getBounds() {
-        return new BoundingBox(getCorner1().getX(), getCorner1().getY(), getCorner1().getZ(),
-                getCorner2().getX(), getCorner2().getY(), getCorner2().getZ());
+    /**
+     * Centers the waiting room location of the arena along the x and z axis.
+     */
+    public void centerWaitingRoom() {
+        Utils.centerConfigLocation(plugin, path + ".waiting");
     }
 
     public boolean hasWinSound() {
@@ -735,7 +550,6 @@ public class Arena {
         config.set(path + ".closed", closed);
         plugin.saveArenaData();
 //        refreshPortal();
-        checkClosedParticles();
     }
 
 //    public List<ArenaRecord> getArenaRecords() {
@@ -916,9 +730,8 @@ public class Arena {
      */
     public void checkClose() {
         if (!plugin.getArenaData().contains("lobby") ||
-//                getPortalLocation() == null || getPlayerSpawn() == null ||
-                getCorner1() == null || getCorner2() == null ||
-                !Objects.equals(getCorner1().getWorld(), getCorner2().getWorld())) {
+//                getPortalLocation() == null ||
+                getPlayerSpawn() == null) {
             setClosed(true);
             Utils.debugInfo(String.format("Arena %d did not meet opening requirements and was closed.", arena),
                     2);
@@ -939,8 +752,6 @@ public class Arena {
         setWaveStartSound(arenaToCopy.hasWaveStartSound());
         setWaveFinishSound(arenaToCopy.hasWaveFinishSound());
         setWaitingSound(arenaToCopy.getWaitingSoundNum());
-        setSpawnParticles(arenaToCopy.hasSpawnParticles());
-        setBorderParticles(arenaToCopy.hasBorderParticles());
         if (config.contains("a" + arenaToCopy.getArena() + ".customShop"))
             try {
                 Objects.requireNonNull(config.getConfigurationSection("a" + arenaToCopy.getArena() + ".customShop"))

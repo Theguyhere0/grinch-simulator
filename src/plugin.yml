@@ -16,3 +16,19 @@ commands:
       description: Changes the plugin debug level
       usage: /grinch debug
       permission: grinch.admin
+    start:
+      description: Forces the start of a game
+      usage: /grinch start
+      permission: grinch.start
+    end:
+      description: Forces the end of a game
+      usage: /grinch end
+      permission: grinch.admin
+    delay:
+      description: Forces a game to restart its waiting time
+      usage: /grinch delay
+      permission: grinch.start
+    fix:
+      description: Tries to automatically update files
+      usage: /grinch fix
+      permission: grinch.admin

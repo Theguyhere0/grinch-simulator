@@ -405,10 +405,10 @@ public class ArenaListener implements Listener {
         Utils.debugInfo("Arena " + arena.getArena() + " is ending.", 2);
     }
 
-//    @EventHandler
-//    public void onArenaReset(ArenaResetEvent e) {
-//        e.getArena().getTask().reset.run();
-//    }
+    @EventHandler
+    public void onArenaReset(ArenaResetEvent e) {
+        e.getArena().getTask().reset.run();
+    }
 
     @EventHandler
     public void onBoardReload(ReloadBoardsEvent e) {

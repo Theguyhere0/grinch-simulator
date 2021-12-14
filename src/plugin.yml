@@ -1,6 +1,6 @@
 main: me.theguyhere.grinchsimulator.Main
 name: GrinchSimulator
-version: 0.0.1
+version: 0.1.0
 author: Theguyhere
 api-version: 1.16
 depend: [ProtocolLib]
@@ -12,3 +12,23 @@ commands:
       description: Opens up the admin panel for Grinch Simulator
       usage: /grinch admin
       permission: grinch.use
+    debug:
+      description: Changes the plugin debug level
+      usage: /grinch debug
+      permission: grinch.admin
+    start:
+      description: Forces the start of a game
+      usage: /grinch start
+      permission: grinch.start
+    end:
+      description: Forces the end of a game
+      usage: /grinch end
+      permission: grinch.admin
+    delay:
+      description: Forces a game to restart its waiting time
+      usage: /grinch delay
+      permission: grinch.start
+    fix:
+      description: Tries to automatically update files
+      usage: /grinch fix
+      permission: grinch.admin

@@ -1,6 +1,7 @@
 package me.theguyhere.grinchsimulator.game.models.arenas;
 
 import me.theguyhere.grinchsimulator.Main;
+import me.theguyhere.grinchsimulator.game.displays.Portal;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
 import me.theguyhere.grinchsimulator.tools.Utils;
@@ -9,14 +10,15 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ArenaManager {
 	private final Main plugin;
 
 	// Tracks arenas, info boards, and leaderboards for the game
-	public static Arena[] arenas = new Arena[45];
+	private static final Arena[] arenas = new Arena[45];
 //	public static InfoBoard[] infoBoards = new InfoBoard[8];
 //	public static Map<String, Leaderboard> leaderboards = new HashMap<>();
 
@@ -25,10 +27,11 @@ public class ArenaManager {
 	public ArenaManager(Main plugin) {
 		this.plugin = plugin;
 
+		// Gather arena data
 		Objects.requireNonNull(plugin.getArenaData().getConfigurationSection("")).getKeys(false)
 				.forEach(path -> {
 			if (path.charAt(0) == 'a' && path.length() < 4)
-				arenas[Integer.parseInt(path.substring(1))] = new Arena(plugin,
+				arenas[Integer.parseInt(path.substring(1)) - 1] = new Arena(plugin,
 						Integer.parseInt(path.substring(1)),
 						new Tasks(plugin, Integer.parseInt(path.substring(1))));
 		});
@@ -53,72 +56,46 @@ public class ArenaManager {
 		setLobby(Utils.getConfigLocation(plugin, "lobby"));
 	}
 
-//	/**
-//	 * Creates a scoreboard for a player.
-//	 * @param player Player to give a scoreboard.
-//	 */
-//	public static void createBoard(GPlayer player) {
-//		// Create scoreboard manager and check that it isn't null
-//		ScoreboardManager manager = Bukkit.getScoreboardManager();
-//		assert manager != null;
-//
-//		Scoreboard board = manager.getNewScoreboard();
-//		Arena arena = Arrays.stream(arenas).filter(Objects::nonNull).filter(a -> a.hasPlayer(player))
-//				.collect(Collectors.toList()).get(0);
-//
-//		// Create score board
-//		Objective obj = board.registerNewObjective("VillagerDefense", "dummy",
-//				Utils.format("&6&l   " + arena.getName() + "  "));
-//		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-//		Score score12= obj.getScore(Utils.format("&eWave: " + arena.getCurrentWave()));
-//		score12.setScore(12);
-//		Score score11 = obj.getScore(Utils.format("&aGems: " + player.getGems()));
-//		score11.setScore(11);
-//		StringBuilder kit = new StringBuilder(player.getKit().getName());
-//		if (player.getKit().isMultiLevel()) {
-//			kit.append(" ");
-//			for (int i = 0; i < player.getKit().getLevel(); i++) {
-//				kit.append("I");
-//			}
-//		}
-//		Score score10 = obj.getScore(Utils.format("&bKit: " + kit));
-//		score10.setScore(10);
-//		int bonus = 0;
-//		for (Challenge challenge : player.getChallenges())
-//			bonus += challenge.getBonus();
-//		Score score9 = obj.getScore(Utils.format(String.format("&5Challenges: (+%d%%)", bonus)));
-//		score9.setScore(9);
-//		if (player.getChallenges().size() < 4)
-//			for (Challenge challenge : player.getChallenges()) {
-//				Score score8 = obj.getScore(Utils.format("  &5" + challenge.getName()));
-//				score8.setScore(8);
-//			}
-//		else {
-//			StringBuilder challenges = new StringBuilder();
-//			for (Challenge challenge : player.getChallenges())
-//				challenges.append(challenge.getName().toCharArray()[0]);
-//			Score score8 = obj.getScore(Utils.format("  &5" + challenges));
-//			score8.setScore(8);
-//		}
-//		Score score7 = obj.getScore("");
-//		score7.setScore(7);
-//		Score score6 = obj.getScore(Utils.format("&dPlayers: " + arena.getAlive()));
-//		score6.setScore(6);
-//		Score score5 = obj.getScore("Ghosts: " + arena.getGhostCount());
-//		score5.setScore(5);
-//		Score score4 = obj.getScore(Utils.format("&7Spectators: " + arena.getSpectatorCount()));
-//		score4.setScore(4);
-//		Score score3 = obj.getScore(" ");
-//		score3.setScore(3);
-//		Score score2 = obj.getScore(Utils.format("&2Villagers: " + arena.getVillagers()));
-//		score2.setScore(2);
-//		Score score1 = obj.getScore(Utils.format("&cEnemies: " + arena.getEnemies()));
-//		score1.setScore(1);
-//		Score score = obj.getScore(Utils.format("&4Kills: " + player.getKills()));
-//		score.setScore(0);
-//
-//		player.getPlayer().setScoreboard(board);
-//	}
+	public static Arena getArena(int id) {
+		return arenas[id - 1];
+	}
+
+	public static Arena[] getArenas() {
+		return arenas;
+	}
+
+	public static void setArena(int id, Arena arena) {
+		arenas[id - 1] = arena;
+	}
+
+	public void checkArenas() {
+		Arrays.stream(arenas).filter(Objects::nonNull).forEach(Arena::checkClose);
+	}
+
+	/**
+	 * Creates a scoreboard for a player.
+	 * @param player Player to give a scoreboard.
+	 */
+	public static void createBoard(GPlayer player) {
+		// Create scoreboard manager and check that it isn't null
+		ScoreboardManager manager = Bukkit.getScoreboardManager();
+		assert manager != null;
+
+		Scoreboard board = manager.getNewScoreboard();
+		Arena arena = Arrays.stream(arenas).filter(Objects::nonNull).filter(a -> a.hasPlayer(player))
+				.collect(Collectors.toList()).get(0);
+
+		// Create score board
+		Objective obj = board.registerNewObjective("GrinchSimulator", "dummy",
+				Utils.format("&6&l   " + arena.getName() + "  "));
+		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+		Score score1 = obj.getScore(Utils.format("&aPresents Stolen: " + player.getGems()));
+		score1.setScore(1);
+		Score score = obj.getScore(Utils.format("&dPlayers: " + arena.getPlayers().size()));
+		score.setScore(0);
+
+		player.getPlayer().setScoreboard(board);
+	}
 
 	public static Location getLobby() {
 		return lobby;
@@ -239,16 +216,16 @@ public class ArenaManager {
 //		}
 //		Utils.setConfigurationLocation(plugin, "leaderboard." + type, null);
 //	}
-//
-//	/**
-//	 * Display all portals to a player.
-//	 * @param player - The player to display all portals to.
-//	 */
-//	public static void displayAllPortals(Player player) {
-//		Arrays.stream(arenas).filter(Objects::nonNull).map(Arena::getPortal)
-//				.filter(Objects::nonNull).forEach(portal -> portal.displayForPlayer(player));
-//	}
-//
+
+	/**
+	 * Display all portals to a player.
+	 * @param player - The player to display all portals to.
+	 */
+	public static void displayAllPortals(Player player) {
+		Arrays.stream(arenas).filter(Objects::nonNull).map(Arena::getPortal)
+				.filter(Objects::nonNull).forEach(portal -> portal.displayForPlayer(player));
+	}
+
 //	/**
 //	 * Display all arena boards to a player.
 //	 * @param player - The player to display all arena boards to.
@@ -273,44 +250,25 @@ public class ArenaManager {
 //	public static void displayAllLeaderboards(Player player) {
 //		leaderboards.forEach((type, board) -> board.displayForPlayer(player));
 //	}
-//
-//	public static void displayAllIndicators(Player player) {
-//		Arrays.stream(arenas).filter(Objects::nonNull).forEach(arena ->
-//		{
-//			if (arena.getPlayerSpawn() != null && arena.getPlayerSpawn().isOn())
-//				arena.getPlayerSpawn().getSpawnIndicator().displayForPlayer(player);
-//		});
-//		Arrays.stream(arenas).filter(Objects::nonNull).forEach(arena ->
-//				arena.getMonsterSpawns().forEach(spawn -> {
-//					if (spawn.isOn())
-//						spawn.getSpawnIndicator().displayForPlayer(player);
-//				}));
-//		Arrays.stream(arenas).filter(Objects::nonNull).forEach(arena ->
-//				arena.getVillagerSpawns().forEach(spawn -> {
-//					if (spawn.isOn())
-//						spawn.getSpawnIndicator().displayForPlayer(player);
-//				}));
-//	}
 
-//	/**
-//	 * Display everything displayable to a player.
-//	 * @param player - The player to display everything to.
-//	 */
-//	public static void displayEverything(Player player) {
-//		displayAllPortals(player);
+	/**
+	 * Display everything displayable to a player.
+	 * @param player - The player to display everything to.
+	 */
+	public static void displayEverything(Player player) {
+		displayAllPortals(player);
 //		displayAllArenaBoards(player);
 //		displayAllInfoBoards(player);
 //		displayAllLeaderboards(player);
-//		displayAllIndicators(player);
-//	}
+	}
 
-//	/**
-//	 * Refresh the portal of every arena.
-//	 */
-//	public static void refreshPortals() {
-//		Arrays.stream(arenas).filter(Objects::nonNull).forEach(Arena::refreshPortal);
-//	}
-//
+	/**
+	 * Refresh the portal of every arena.
+	 */
+	public static void refreshPortals() {
+		Arrays.stream(arenas).filter(Objects::nonNull).forEach(Arena::refreshPortal);
+	}
+
 //	/**
 //	 * Refresh the arena board of every arena.
 //	 */
@@ -334,19 +292,19 @@ public class ArenaManager {
 //		List<String> types = new ArrayList<>(leaderboards.keySet());
 //		types.forEach(this::refreshLeaderboard);
 //	}
-//
-//	/**
-//	 * Refresh all holographics.
-//	 */
-//	public void refreshAll() {
-//		refreshPortals();
+
+	/**
+	 * Refresh all holographics.
+	 */
+	public void refreshAll() {
+		refreshPortals();
 //		refreshArenaBoards();
 //		refreshInfoBoards();
 //		refreshLeaderboards();
-//	}
-//
-//	public static void removePortals() {
-//        Arrays.stream(arenas).filter(Objects::nonNull).map(Arena::getPortal).filter(Objects::nonNull)
-//				.forEach(Portal::remove);
-//    }
+	}
+
+	public static void removePortals() {
+        Arrays.stream(arenas).filter(Objects::nonNull).map(Arena::getPortal).filter(Objects::nonNull)
+				.forEach(Portal::remove);
+    }
 }

@@ -1,6 +1,8 @@
 package me.theguyhere.grinchsimulator.game.models;
 
 import me.theguyhere.grinchsimulator.Main;
+import me.theguyhere.grinchsimulator.events.GameEndEvent;
+import me.theguyhere.grinchsimulator.events.GameStartEvent;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaStatus;
@@ -159,15 +161,12 @@ public class Tasks {
 			arenaInstance.setStatus(ArenaStatus.ACTIVE);
 			arenaInstance.newGameID();
 
-//			// Teleport players to arena if waiting room exists
-//			if (arenaInstance.getWaitingRoom() != null) {
-//				for (GPlayer gPlayer : arenaInstance.getActives()) {
-//					Utils.teleAdventure(gPlayer.getPlayer(), arenaInstance.getPlayerSpawn().getLocation());
-//				}
-//				for (GPlayer player : arenaInstance.getSpectators()) {
-//					Utils.teleSpectator(player.getPlayer(), arenaInstance.getPlayerSpawn().getLocation());
-//				}
-//			}
+			// Teleport players to arena if waiting room exists
+			if (arenaInstance.getWaitingRoom() != null) {
+				for (GPlayer gPlayer : arenaInstance.getPlayers()) {
+					Utils.teleAdventure(gPlayer.getPlayer(), arenaInstance.getPlayerSpawn());
+				}
+			}
 
 			// Stop waiting sound
 			if (arenaInstance.getWaitingSound() != null)
@@ -183,9 +182,9 @@ public class Tasks {
 //				}
 //			});
 
-//			// Trigger WaveEndEvent
-//			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
-//					Bukkit.getPluginManager().callEvent(new WaveEndEvent(arenaInstance)));
+			// Trigger GameStartEvent
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
+					Bukkit.getPluginManager().callEvent(new GameStartEvent(arenaInstance)));
 
 			// Debug message to console
 			Utils.debugInfo("Arena " + arena + " is starting.", 2);
@@ -221,7 +220,7 @@ public class Tasks {
 //
 //			// Revive dead players
 //			for (GPlayer p : arenaInstance.getGhosts()) {
-//				Utils.teleAdventure(p.getPlayer(), arenaInstance.getPlayerSpawn().getLocation());
+//				Utils.teleAdventure(p.getPlayer(), arenaInstance.getPlayerSpawn());
 //				p.setStatus(PlayerStatus.ALIVE);
 //				giveItems(p);
 //
@@ -356,70 +355,67 @@ public class Tasks {
 //		}
 //	};
 
-//	// Update active player scoreboards
-//	public final Runnable updateBoards = new Runnable() {
-//		@Override
-//		public void run() {
-//			ArenaManager.getArena(arena).getActives().forEach(ArenaManager::createBoard);
-//		}
-//	};
+	// Update active player scoreboards
+	public final Runnable updateBoards = new Runnable() {
+		@Override
+		public void run() {
+			ArenaManager.getArena(arena).getPlayers().forEach(ArenaManager::createBoard);
+		}
+	};
 
-//	// Update time limit bar
-//	public final Runnable updateBar = new Runnable() {
-//		double progress = 1;
-//		double time;
-//		boolean messageSent;
-//		Arena arenaInstance;
-//
-//
-//		@Override
-//		public void run() {
-//			arenaInstance = ArenaManager.getArena(arena);
-//
-//			// Add time limit bar if it doesn't exist
-//			if (arenaInstance.getTimeLimitBar() == null) {
-//				progress = 1;
-//				arenaInstance.startTimeLimitBar();
-//				arenaInstance.getPlayers().forEach(gPlayer ->
-//						arenaInstance.addPlayerToTimeLimitBar(gPlayer.getPlayer()));
-//				time = 1d / Utils.minutesToSeconds(arenaInstance.getWaveTimeLimit() * multiplier);
-//				messageSent = false;
-//
-//				// Debug message to console
-//				Utils.debugInfo("Adding time limit bar to Arena " + arena, 2);
-//			}
-//
-//			else {
-//				// Trigger wave end event
-//				if (progress <= 0) {
-//					progress = 0;
-//					Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
-//							Bukkit.getPluginManager().callEvent(new GameEndEvent(arenaInstance)));
-//				}
-//
-//				// Decrement time limit bar
-//				else {
-//					if (progress <= time * Utils.minutesToSeconds(1)) {
-//						arenaInstance.updateTimeLimitBar(BarColor.RED, progress);
-//						if (!messageSent) {
-//							// Send warning
-//							arenaInstance.getActives().forEach(player ->
-//									player.getPlayer().sendTitle(Utils.format(
-//											plugin.getLanguageData().getString("minuteWarning")), null,
-//											Utils.secondsToTicks(.5), Utils.secondsToTicks(1.5),
-//											Utils.secondsToTicks(.5)));
-//
-//							// Set monsters glowing when time is low
-//							arenaInstance.setMonsterGlow();
-//
-//							messageSent = true;
-//						}
-//					} else arenaInstance.updateTimeLimitBar(progress);
-//					progress -= time;
-//				}
-//			}
-//		}
-//	};
+	// Update time limit bar
+	public final Runnable updateBar = new Runnable() {
+		double progress = 1;
+		double time;
+		boolean messageSent;
+		Arena arenaInstance;
+
+
+		@Override
+		public void run() {
+			arenaInstance = ArenaManager.getArena(arena);
+
+			// Add time limit bar if it doesn't exist
+			if (arenaInstance.getTimeLimitBar() == null) {
+				progress = 1;
+				arenaInstance.startTimeLimitBar();
+				arenaInstance.getPlayers().forEach(gPlayer ->
+						arenaInstance.addPlayerToTimeLimitBar(gPlayer.getPlayer()));
+				time = 1d / Utils.minutesToSeconds(arenaInstance.getWaveTimeLimit());
+				messageSent = false;
+
+				// Debug message to console
+				Utils.debugInfo("Adding time limit bar to Arena " + arena, 2);
+			}
+
+			else {
+				// Trigger wave end event
+				if (progress <= 0) {
+					progress = 0;
+					Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
+							Bukkit.getPluginManager().callEvent(new GameEndEvent(arenaInstance)));
+				}
+
+				// Decrement time limit bar
+				else {
+					if (progress <= time * Utils.minutesToSeconds(1)) {
+						arenaInstance.updateTimeLimitBar(BarColor.RED, progress);
+						if (!messageSent) {
+							// Send warning
+							arenaInstance.getPlayers().forEach(player ->
+									player.getPlayer().sendTitle(Utils.format(
+											plugin.getLanguageData().getString("minuteWarning")), null,
+											Utils.secondsToTicks(.5), Utils.secondsToTicks(1.5),
+											Utils.secondsToTicks(.5)));
+
+							messageSent = true;
+						}
+					} else arenaInstance.updateTimeLimitBar(progress);
+					progress -= time;
+				}
+			}
+		}
+	};
 
 //	// Gives items on spawn or respawn based on kit selected
 //	public void giveItems(GPlayer player) {

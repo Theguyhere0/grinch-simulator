@@ -1,14 +1,19 @@
 package me.theguyhere.grinchsimulator.listeners;
 
 import me.theguyhere.grinchsimulator.Main;
+import me.theguyhere.grinchsimulator.events.LeaveArenaEvent;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
 import me.theguyhere.grinchsimulator.tools.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,6 +27,7 @@ public class JoinListener implements Listener {
 	@EventHandler
 	public void onJoin(PlayerJoinEvent e) {
 		Player player = e.getPlayer();
+		ArenaManager.displayEverything(player);
 		plugin.getReader().inject(player);
 
 		// Get list of loggers from data file
@@ -73,29 +79,30 @@ public class JoinListener implements Listener {
 			player.sendMessage(Utils.notify(plugin.getLanguageData().getString("outdatedError")));
 	}
 	
-//	@EventHandler
-//	public void onPortal(PlayerChangedWorldEvent e) {
-//		Game.displayAllPortals(e.getPlayer());
-//	}
+	@EventHandler
+	public void onPortal(PlayerChangedWorldEvent e) {
+		ArenaManager.displayAllPortals(e.getPlayer());
+	}
 	
-//	@EventHandler
-//	public void onQuit(PlayerQuitEvent e) {
-//		Player player = e.getPlayer();
-//
-//		// Uninject player and make them leave from arena
-//		plugin.getReader().uninject(player);
-//		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
-//				Bukkit.getPluginManager().callEvent(new LeaveArenaEvent(player)));
-//
-//		// Get list of loggers from data file and add player to it
-//		List<String> loggers = plugin.getPlayerData().getStringList("loggers");
-//		loggers.add(player.getName());
-//
-//		// Add to list of loggers if in a game
-//		if (Arrays.stream(Game.arenas).filter(Objects::nonNull).anyMatch(arena -> arena.hasPlayer(player))) {
-//			Utils.debugInfo(player.getName() + " logged out mid-game.", 2);
-//			plugin.getPlayerData().set("loggers", loggers);
-//			plugin.savePlayerData();
-//		}
-//	}
+	@EventHandler
+	public void onQuit(PlayerQuitEvent e) {
+		Player player = e.getPlayer();
+
+		// Uninject player and make them leave from arena
+		plugin.getReader().uninject(player);
+		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
+				Bukkit.getPluginManager().callEvent(new LeaveArenaEvent(player)));
+
+		// Get list of loggers from data file and add player to it
+		List<String> loggers = plugin.getPlayerData().getStringList("loggers");
+		loggers.add(player.getName());
+
+		// Add to list of loggers if in a game
+		if (Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull)
+				.anyMatch(arena -> arena.hasPlayer(player))) {
+			Utils.debugInfo(player.getName() + " logged out mid-game.", 2);
+			plugin.getPlayerData().set("loggers", loggers);
+			plugin.savePlayerData();
+		}
+	}
 }

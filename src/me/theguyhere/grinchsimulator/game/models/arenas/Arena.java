@@ -3,17 +3,21 @@ package me.theguyhere.grinchsimulator.game.models.arenas;
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.exceptions.InvalidNameException;
 import me.theguyhere.grinchsimulator.exceptions.PlayerNotFoundException;
+import me.theguyhere.grinchsimulator.game.displays.Portal;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
 import me.theguyhere.grinchsimulator.tools.Utils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.BoundingBox;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,16 +43,12 @@ public class Arena {
     private ArenaStatus status;
     /** The ID of the game currently in progress.*/
     private int gameID;
-    /** ID of task managing corner particles.*/
-    private int cornerParticlesID = 0;
     /** A list of players in the arena.*/
     private final List<GPlayer> players = new ArrayList<>();
     /** Time limit bar object.*/
     private BossBar timeLimitBar;
-//    /** Portal object for the arena.*/
-//    private Portal portal;
-//    /** The player spawn for the arena.*/
-//    private ArenaSpawn playerSpawn;
+    /** Portal object for the arena.*/
+    private Portal portal;
 //    /** Arena scoreboard object for the arena.*/
 //    private ArenaBoard arenaBoard;
 
@@ -60,9 +60,7 @@ public class Arena {
         this.task = task;
         status = ArenaStatus.WAITING;
 //        refreshArenaBoard();
-//        refreshPlayerSpawn();
-//        refreshPortal();
-//        checkClosedParticles();
+        refreshPortal();
     }
 
     public int getArena() {
@@ -114,29 +112,9 @@ public class Arena {
             setWaitingSound(14);
         }
 
-//        // Refresh portal
-//        if (getPortalLocation() != null)
-//            refreshPortal();
-    }
-
-    /**
-     * Retrieves the difficulty label of the arena from the arena file.
-     * @return Arena difficulty label.
-     */
-    public String getDifficultyLabel() {
-        if (config.contains(path + ".difficultyLabel"))
-            return config.getString(path + ".difficultyLabel");
-        else return "";
-    }
-
-    /**
-     * Writes the new difficulty label of the arena into the arena file.
-     * @param label New difficulty label.
-     */
-    public void setDifficultyLabel(String label) {
-        config.set(path + ".difficultyLabel", label);
-        plugin.saveArenaData();
-//        refreshPortal();
+        // Refresh portal
+        if (getPortalLocation() != null)
+            refreshPortal();
     }
 
     /**
@@ -335,70 +313,70 @@ public class Arena {
         plugin.saveArenaData();
     }
 
-//    public Portal getPortal() {
-//        return portal;
-//    }
-//
-//    public Location getPortalLocation() {
-//        return Utils.getConfigLocationNoPitch(plugin, path + ".portal");
-//    }
+    public Portal getPortal() {
+        return portal;
+    }
 
-//    /**
-//     * Creates a new portal at the given location and deletes the old portal.
-//     * @param location New location
-//     */
-//    public void setPortal(Location location) {
-//        // Save config location
-//        Utils.setConfigurationLocation(plugin, path + ".portal", location);
-//
-//        // Recreate the portal
-//        refreshPortal();
-//    }
-//
-//    /**
-//     * Recreates the portal in game based on the location in the arena file.
-//     */
-//    public void refreshPortal() {
-//        // Try recreating the portal
-//        try {
-//            // Delete old portal if needed
-//            if (portal != null)
-//                portal.remove();
-//
-//            // Create a new portal and display it
-//            portal = new Portal(Objects.requireNonNull(Utils.getConfigLocationNoPitch(plugin, path + ".portal")),
-//                    this);
-//            portal.displayForOnline();
-//        } catch (Exception e) {
-//            Utils.debugError("Invalid location for arena board " + arena, 1);
-//            Utils.debugInfo("Portal location data may be corrupt. If data cannot be manually corrected in " +
-//                    "arenaData.yml, please delete the portal location data for arena " + arena + ".", 1);
-//        }
-//    }
-//
-//    /**
-//     * Centers the portal location along the x and z axis.
-//     */
-//    public void centerPortal() {
-//        // Center the location
-//        Utils.centerConfigLocation(plugin, path + ".portal");
-//
-//        // Recreate the portal
-//        refreshPortal();
-//    }
-//
-//    /**
-//     * Removes the portal from the game and from the arena file.
-//     */
-//    public void removePortal() {
-//        if (portal != null) {
-//            portal.remove();
-//            portal = null;
-//        }
-//        Utils.setConfigurationLocation(plugin, path + ".portal", null);
-//        checkClose();
-//    }
-//
+    public Location getPortalLocation() {
+        return Utils.getConfigLocationNoPitch(plugin, path + ".portal");
+    }
+
+    /**
+     * Creates a new portal at the given location and deletes the old portal.
+     * @param location New location
+     */
+    public void setPortal(Location location) {
+        // Save config location
+        Utils.setConfigurationLocation(plugin, path + ".portal", location);
+
+        // Recreate the portal
+        refreshPortal();
+    }
+
+    /**
+     * Recreates the portal in game based on the location in the arena file.
+     */
+    public void refreshPortal() {
+        // Try recreating the portal
+        try {
+            // Delete old portal if needed
+            if (portal != null)
+                portal.remove();
+
+            // Create a new portal and display it
+            portal = new Portal(Objects.requireNonNull(Utils.getConfigLocationNoPitch(plugin, path + ".portal")),
+                    this);
+            portal.displayForOnline();
+        } catch (Exception e) {
+            Utils.debugError("Invalid location for arena board " + arena, 1);
+            Utils.debugInfo("Portal location data may be corrupt. If data cannot be manually corrected in " +
+                    "arenaData.yml, please delete the portal location data for arena " + arena + ".", 1);
+        }
+    }
+
+    /**
+     * Centers the portal location along the x and z axis.
+     */
+    public void centerPortal() {
+        // Center the location
+        Utils.centerConfigLocation(plugin, path + ".portal");
+
+        // Recreate the portal
+        refreshPortal();
+    }
+
+    /**
+     * Removes the portal from the game and from the arena file.
+     */
+    public void removePortal() {
+        if (portal != null) {
+            portal.remove();
+            portal = null;
+        }
+        Utils.setConfigurationLocation(plugin, path + ".portal", null);
+        checkClose();
+    }
+
 //    public ArenaBoard getArenaBoard() {
 //        return arenaBoard;
 //    }
@@ -549,7 +527,7 @@ public class Arena {
     public void setClosed(boolean closed) {
         config.set(path + ".closed", closed);
         plugin.saveArenaData();
-//        refreshPortal();
+        refreshPortal();
     }
 
 //    public List<ArenaRecord> getArenaRecords() {
@@ -612,7 +590,7 @@ public class Arena {
 
     public void setStatus(ArenaStatus status) {
         this.status = status;
-//        refreshPortal();
+        refreshPortal();
     }
 
     public int getGameID() {
@@ -667,19 +645,18 @@ public class Arena {
         return timeLimitBar;
     }
 
-//    /**
-//     * Create a time limit bar to display.
-//     */
-//    public void startTimeLimitBar() {
-//        try {
-//            timeLimitBar = Bukkit.createBossBar(Utils.format(
-//                    String.format(Objects.requireNonNull(plugin.getLanguageData().getString("timeBar")),
-//                            getCurrentWave())),
-//                    BarColor.YELLOW, BarStyle.SOLID);
-//        } catch (Exception e) {
-//            Utils.debugError("The active language file is missing text for the key 'timeBar'.", 1);
-//        }
-//    }
+    /**
+     * Create a time limit bar to display.
+     */
+    public void startTimeLimitBar() {
+        try {
+            timeLimitBar = Bukkit.createBossBar(
+                    Utils.format(Objects.requireNonNull(plugin.getLanguageData().getString("timeBar"))),
+                    BarColor.YELLOW, BarStyle.SOLID);
+        } catch (Exception e) {
+            Utils.debugError("The active language file is missing text for the key 'timeBar'.", 1);
+        }
+    }
 
     /**
      * Updates the time limit bar's progress.
@@ -746,7 +723,6 @@ public class Arena {
         setMaxPlayers(arenaToCopy.getMaxPlayers());
         setMinPlayers(arenaToCopy.getMinPlayers());
         setWaveTimeLimit(arenaToCopy.getWaveTimeLimit());
-        setDifficultyLabel(arenaToCopy.getDifficultyLabel());
         setWinSound(arenaToCopy.hasWinSound());
         setLoseSound(arenaToCopy.hasLoseSound());
         setWaveStartSound(arenaToCopy.hasWaveStartSound());

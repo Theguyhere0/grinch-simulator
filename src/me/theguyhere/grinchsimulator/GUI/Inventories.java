@@ -448,28 +448,28 @@ public class Inventories {
 		return inv;
 	}
 
-//	// Menu for editing the portal and leaderboard of an arena
-//	public static Inventory createPortalInventory(int arena) {
-//		Arena arenaInstance = ArenaManager.getArena(arena);
-//
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-//				Utils.format("&5&lPortal/LBoard: " + arenaInstance.getName()));
-//
-//		// Option to create or relocate the portal
-//		if (arenaInstance.getPortal() == null)
-//			inv.setItem(0, InventoryItems.create("Portal"));
-//		else inv.setItem(0, InventoryItems.relocate("Portal"));
-//
-//		// Option to teleport to the portal
-//		inv.setItem(1, InventoryItems.teleport("Portal"));
-//
-//		// Option to center the portal
-//		inv.setItem(2, InventoryItems.center("Portal"));
-//
-//		// Option to remove the portal
-//		inv.setItem(3, InventoryItems.remove("PORTAL"));
-//
+	// Menu for editing the portal and leaderboard of an arena
+	public static Inventory createPortalInventory(int arena) {
+		Arena arenaInstance = ArenaManager.getArena(arena);
+
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&5&lPortal/LBoard: " + arenaInstance.getName()));
+
+		// Option to create or relocate the portal
+		if (arenaInstance.getPortal() == null)
+			inv.setItem(0, InventoryItems.create("Portal"));
+		else inv.setItem(0, InventoryItems.relocate("Portal"));
+
+		// Option to teleport to the portal
+		inv.setItem(1, InventoryItems.teleport("Portal"));
+
+		// Option to center the portal
+		inv.setItem(2, InventoryItems.center("Portal"));
+
+		// Option to remove the portal
+		inv.setItem(3, InventoryItems.remove("PORTAL"));
+
 //		// Option to create or relocate the leaderboard
 //		if (arenaInstance.getArenaBoard() == null)
 //			inv.setItem(4, InventoryItems.create("Leaderboard"));
@@ -483,28 +483,28 @@ public class Inventories {
 //
 //		// Option to remove the leaderboard
 //		inv.setItem(7, InventoryItems.remove("LEADERBOARD"));
-//
-//		// Option to exit
-//		inv.setItem(8, InventoryItems.exit());
-//
-//		return inv;
-//	}
-//
-//	// Confirmation menu for removing the arena portal
-//	public static Inventory createPortalConfirmInventory(int arena) {
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-//				Utils.format("&4&lRemove Portal?"));
-//
-//		// "No" option
-//		inv.setItem(0, InventoryItems.no());
-//
-//		// "Yes" option
-//		inv.setItem(8, InventoryItems.yes());
-//
-//		return inv;
-//	}
-//
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Confirmation menu for removing the arena portal
+	public static Inventory createPortalConfirmInventory(int arena) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&4&lRemove Portal?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
+
 //	// Confirmation menu for removing the arena leaderboard
 //	public static Inventory createArenaBoardConfirmInventory(int arena) {
 //		// Create inventory
@@ -690,17 +690,7 @@ public class Inventories {
 				Utils.format("&8&lGame Settings: " + arenaInstance.getName()));
 
 		// Option to wave time limit
-		inv.setItem(0, Utils.createItem(Material.CLOCK, Utils.format("&2&lWave Time Limit")));
-
-		// Option to edit difficulty label
-		inv.setItem(1, Utils.createItem(Material.NAME_TAG, Utils.format("&6&lDifficulty Label")));
-
-		// Option to adjust overall difficulty multiplier
-		inv.setItem(2, Utils.createItem(Material.TURTLE_HELMET,
-				Utils.format("&4&lDifficulty Multiplier"),
-				Utils.BUTTON_FLAGS,
-				null,
-				Utils.format("&7Determines difficulty increase rate")));
+		inv.setItem(1, Utils.createItem(Material.CLOCK, Utils.format("&2&lWave Time Limit")));
 
 		// Option to edit sounds
 		inv.setItem(3, Utils.createItem(Material.MUSIC_DISC_13,
@@ -709,7 +699,7 @@ public class Inventories {
 				null));
 
 		// Option to copy game settings from another arena or a preset
-		inv.setItem(4, Utils.createItem(Material.WRITABLE_BOOK,
+		inv.setItem(5, Utils.createItem(Material.WRITABLE_BOOK,
 				Utils.format("&f&lCopy Game Settings"),
 				Utils.format("&7Copy settings of another arena or"),
 				Utils.format("&7choose from a menu of presets")));
@@ -751,51 +741,6 @@ public class Inventories {
 		return inv;
 	}
 
-	// Menu for changing the difficulty label of an arena
-	public static Inventory createDifficultyLabelInventory(int arena) {
-		String label = ArenaManager.getArena(arena).getDifficultyLabel();
-		switch (label) {
-			case "Easy":
-				label = "&a&lEasy";
-				break;
-			case "Medium":
-				label = "&e&lMedium";
-				break;
-			case "Hard":
-				label = "&c&lHard";
-				break;
-			case "Insane":
-				label = "&d&lInsane";
-				break;
-			default:
-				label = "";
-		}
-
-		// Create inventory
-		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-				Utils.format("&6&lDifficulty Label: " + label));
-
-		// "Easy" option
-		inv.setItem(0, Utils.createItem(Material.LIME_CONCRETE, Utils.format("&a&lEasy")));
-
-		// "Medium" option
-		inv.setItem(1, Utils.createItem(Material.YELLOW_CONCRETE, Utils.format("&e&lMedium")));
-
-		// "Hard" option
-		inv.setItem(2, Utils.createItem(Material.RED_CONCRETE, Utils.format("&c&lHard")));
-
-		// "Insane" option
-		inv.setItem(3, Utils.createItem(Material.MAGENTA_CONCRETE, Utils.format("&d&lInsane")));
-
-		// "None" option
-		inv.setItem(4, Utils.createItem(Material.LIGHT_GRAY_CONCRETE, Utils.format("&7&lNone")));
-
-		// Option to exit
-		inv.setItem(8, InventoryItems.exit());
-
-		return inv;
-	}
-
 	// Menu for editing the sounds of an arena
 	public static Inventory createSoundsInventory(int arena) {
 		Arena arenaInstance = ArenaManager.getArena(arena);
@@ -804,33 +749,33 @@ public class Inventories {
 		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
 				Utils.format("&d&lSounds: " + ArenaManager.getArena(arena).getName()));
 
-		// Option to edit win sound
-		inv.setItem(0, Utils.createItem(Material.MUSIC_DISC_PIGSTEP,
-				Utils.format("&a&lWin Sound: " + getToggleStatus(arenaInstance.hasWinSound())),
-				Utils.BUTTON_FLAGS,
-				null,
-				Utils.format("&7Played when game ends and players win")));
-
-		// Option to edit lose sound
-		inv.setItem(1, Utils.createItem(Material.MUSIC_DISC_11,
-				Utils.format("&e&lLose Sound: " + getToggleStatus(arenaInstance.hasLoseSound())),
-				Utils.BUTTON_FLAGS,
-				null,
-				Utils.format("&7Played when game ends and players lose")));
-
-		// Option to edit wave start sound
-		inv.setItem(2, Utils.createItem(Material.MUSIC_DISC_CAT,
-				Utils.format("&2&lWave Start Sound: " + getToggleStatus(arenaInstance.hasWaveStartSound())),
-				Utils.BUTTON_FLAGS,
-				null,
-				Utils.format("&7Played when a wave starts")));
-
-		// Option to edit wave finish sound
-		inv.setItem(3, Utils.createItem(Material.MUSIC_DISC_BLOCKS,
-				Utils.format("&9&lWave Finish Sound: " + getToggleStatus(arenaInstance.hasWaveFinishSound())),
-				Utils.BUTTON_FLAGS,
-				null,
-				Utils.format("&7Played when a wave ends")));
+//		// Option to edit win sound
+//		inv.setItem(0, Utils.createItem(Material.MUSIC_DISC_PIGSTEP,
+//				Utils.format("&a&lWin Sound: " + getToggleStatus(arenaInstance.hasWinSound())),
+//				Utils.BUTTON_FLAGS,
+//				null,
+//				Utils.format("&7Played when game ends and players win")));
+//
+//		// Option to edit lose sound
+//		inv.setItem(1, Utils.createItem(Material.MUSIC_DISC_11,
+//				Utils.format("&e&lLose Sound: " + getToggleStatus(arenaInstance.hasLoseSound())),
+//				Utils.BUTTON_FLAGS,
+//				null,
+//				Utils.format("&7Played when game ends and players lose")));
+//
+//		// Option to edit wave start sound
+//		inv.setItem(2, Utils.createItem(Material.MUSIC_DISC_CAT,
+//				Utils.format("&2&lWave Start Sound: " + getToggleStatus(arenaInstance.hasWaveStartSound())),
+//				Utils.BUTTON_FLAGS,
+//				null,
+//				Utils.format("&7Played when a wave starts")));
+//
+//		// Option to edit wave finish sound
+//		inv.setItem(3, Utils.createItem(Material.MUSIC_DISC_BLOCKS,
+//				Utils.format("&9&lWave Finish Sound: " + getToggleStatus(arenaInstance.hasWaveFinishSound())),
+//				Utils.BUTTON_FLAGS,
+//				null,
+//				Utils.format("&7Played when a wave ends")));
 
 		// Option to edit waiting music
 		inv.setItem(4, Utils.createItem(Material.MUSIC_DISC_MELLOHI,
@@ -894,18 +839,6 @@ public class Inventories {
 						Utils.format("&a&lCopy " + ArenaManager.getArena(i).getName())));
 		}
 
-		// Easy preset
-		inv.setItem(45, Utils.createItem(Material.LIME_CONCRETE, Utils.format("&a&lEasy Preset")));
-
-		// Medium preset
-		inv.setItem(47, Utils.createItem(Material.YELLOW_CONCRETE, Utils.format("&e&lMedium Preset")));
-
-		// Hard preset
-		inv.setItem(49, Utils.createItem(Material.RED_CONCRETE, Utils.format("&c&lHard Preset")));
-
-		// Insane preset
-		inv.setItem(51, Utils.createItem(Material.MAGENTA_CONCRETE, Utils.format("&d&lInsane Preset")));
-
 		// Option to exit
 		inv.setItem(53, InventoryItems.exit());
 
@@ -955,7 +888,7 @@ public class Inventories {
 	// Display arena information
 	public static Inventory createArenaInfoInventory(Arena arena) {
 		// Create inventory
-		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena.getArena()), 36, Utils.format("&k") +
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena.getArena()), 9, Utils.format("&k") +
 				Utils.format("&6&l" + arena.getName() + " Info"));
 
 		// Maximum players
@@ -994,7 +927,7 @@ public class Inventories {
 //				}
 //			}
 //		});
-//		inv.setItem(32, Utils.createItem(Material.GOLDEN_HELMET, Utils.format("&e&lArena Records"), Utils.BUTTON_FLAGS,
+//		inv.setItem(5, Utils.createItem(Material.GOLDEN_HELMET, Utils.format("&e&lArena Records"), Utils.BUTTON_FLAGS,
 //				null, records));
 
 		return inv;

@@ -306,12 +306,12 @@ public class Utils {
 
     public static void debugError(String msg, int debugLevel) {
         if (Main.getDebugLevel() >= debugLevel)
-            log.log(Level.WARNING,"[VillagerDefense] " + msg);
+            log.log(Level.WARNING,"[GrinchSimulator] " + msg);
     }
 
     public static void debugInfo(String msg, int debugLevel) {
         if (Main.getDebugLevel() >= debugLevel)
-            log.info("[VillagerDefense] " + msg);
+            log.info("[GrinchSimulator] " + msg);
     }
 
     /**

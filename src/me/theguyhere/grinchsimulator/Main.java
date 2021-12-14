@@ -1,8 +1,8 @@
 package me.theguyhere.grinchsimulator;
 
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
-import me.theguyhere.grinchsimulator.listeners.InventoryListener;
-import me.theguyhere.grinchsimulator.listeners.JoinListener;
+import me.theguyhere.grinchsimulator.listeners.*;
+import me.theguyhere.grinchsimulator.packets.MetadataHelper;
 import me.theguyhere.grinchsimulator.packets.PacketReader;
 import me.theguyhere.grinchsimulator.tools.DataManager;
 import me.theguyhere.grinchsimulator.tools.Utils;
@@ -44,10 +44,12 @@ public class Main extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
         PluginManager pm = getServer().getPluginManager();
+        MetadataHelper.init();
         arenaManager = new ArenaManager(this);
-        Commands commands = new Commands(this);
+        arenaManager.checkArenas();
 
         // Set up commands and tab complete
+        Commands commands = new Commands(this);
         Objects.requireNonNull(getCommand("grinch"), "'grinch' command should exist")
                 .setExecutor(commands);
         Objects.requireNonNull(getCommand("grinch"), "'grinch' command should exist")
@@ -56,6 +58,11 @@ public class Main extends JavaPlugin {
         // Register event listeners
         pm.registerEvents(new InventoryListener(this), this);
         pm.registerEvents(new JoinListener(this), this);
+        pm.registerEvents(new WorldListener(this), this);
+        pm.registerEvents(new DeathListener(this), this);
+        pm.registerEvents(new GameListener(this), this);
+        pm.registerEvents(new ArenaListener(this), this);
+        pm.registerEvents(new ClickPortalListener(), this);
 
         // Inject online players into packet reader
         if (!Bukkit.getOnlinePlayers().isEmpty())
@@ -108,7 +115,12 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // Remove uninject players
+        for (Player player : Bukkit.getOnlinePlayers())
+            reader.uninject(player);
 
+        // Remove all portals
+        ArenaManager.removePortals();
     }
 
     public PacketReader getReader() {

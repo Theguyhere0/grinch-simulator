@@ -4,8 +4,10 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import me.theguyhere.grinchsimulator.Main;
+import me.theguyhere.grinchsimulator.events.LeftClickNPCEvent;
+import me.theguyhere.grinchsimulator.events.RightClickNPCEvent;
 import me.theguyhere.grinchsimulator.events.SignGUIEvent;
-import me.theguyhere.grinchsimulator.game.models.Tasks;
+import me.theguyhere.grinchsimulator.game.displays.Portal;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
 import me.theguyhere.grinchsimulator.tools.Utils;
@@ -17,10 +19,7 @@ import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class PacketReader {
 	Channel channel;
@@ -69,28 +68,28 @@ public class PacketReader {
 		if (packet.getClass().getSimpleName().equalsIgnoreCase("PacketPlayInUseEntity")) {
 			int id = (int) getValue(packet, "a");
 
-//			if (getValue(packet, "action").toString().equalsIgnoreCase("ATTACK")) {
-//				Arrays.stream(ArenaManager.arenas).filter(Objects::nonNull).map(Arena::getPortal).filter(Objects::nonNull)
-//						.map(Portal::getNpc).filter(Objects::nonNull).forEach(npc -> {
-//							int npcId = npc.getVillager().getEntityId();
-//							if (npcId == id)
-//								Bukkit.getScheduler().scheduleSyncDelayedTask(Main.getPlugin(Main.class), () ->
-//										Bukkit.getPluginManager().callEvent(new LeftClickNPCEvent(player, npcId)));
-//						});
-//				return;
-//			}
+			if (getValue(packet, "action").toString().equalsIgnoreCase("ATTACK")) {
+				Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).map(Arena::getPortal).filter(Objects::nonNull)
+						.map(Portal::getNpc).filter(Objects::nonNull).forEach(npc -> {
+							int npcId = npc.getCreeper().getEntityId();
+							if (npcId == id)
+								Bukkit.getScheduler().scheduleSyncDelayedTask(Main.getPlugin(Main.class), () ->
+										Bukkit.getPluginManager().callEvent(new LeftClickNPCEvent(player, npcId)));
+						});
+				return;
+			}
 			if (getValue(packet, "d").toString().equalsIgnoreCase("OFF_HAND"))
 				return;
 			if (getValue(packet, "action").toString().equalsIgnoreCase("INTERACT_AT"))
 				return;
-//			if (getValue(packet, "action").toString().equalsIgnoreCase("INTERACT"))
-//				Arrays.stream(ArenaManager.arenas).filter(Objects::nonNull).map(Arena::getPortal).filter(Objects::nonNull)
-//						.map(Portal::getNpc).filter(Objects::nonNull).forEach(npc -> {
-//							int npcId = npc.getVillager().getEntityId();
-//							if (npcId == id)
-//								Bukkit.getScheduler().scheduleSyncDelayedTask(Main.getPlugin(Main.class), () ->
-//										Bukkit.getPluginManager().callEvent(new RightClickNPCEvent(player, npcId)));
-//						});
+			if (getValue(packet, "action").toString().equalsIgnoreCase("INTERACT"))
+				Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).map(Arena::getPortal).filter(Objects::nonNull)
+						.map(Portal::getNpc).filter(Objects::nonNull).forEach(npc -> {
+							int npcId = npc.getCreeper().getEntityId();
+							if (npcId == id)
+								Bukkit.getScheduler().scheduleSyncDelayedTask(Main.getPlugin(Main.class), () ->
+										Bukkit.getPluginManager().callEvent(new RightClickNPCEvent(player, npcId)));
+						});
 			return;
 		}
 

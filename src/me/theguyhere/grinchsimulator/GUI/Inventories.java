@@ -1,6 +1,7 @@
 package me.theguyhere.grinchsimulator.GUI;
 
 import me.theguyhere.grinchsimulator.Main;
+import me.theguyhere.grinchsimulator.game.models.Presents;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
 import me.theguyhere.grinchsimulator.tools.Utils;
@@ -414,18 +415,21 @@ public class Inventories {
 		// Option to edit player settings
 		inv.setItem(2, Utils.createItem(Material.PLAYER_HEAD, Utils.format("&d&lPlayer Settings")));
 
+		// Option to edit present settings
+		inv.setItem(3, Utils.rename(Presents.RED_PRESENT, Utils.format("&b&lPresent Settings")));
+
 		// Option to edit miscellaneous game settings
-		inv.setItem(3, Utils.createItem(Material.REDSTONE, Utils.format("&7&lGame Settings")));
+		inv.setItem(4, Utils.createItem(Material.REDSTONE, Utils.format("&7&lGame Settings")));
 
 		// Option to close the arena
 		String closed;
 		if (arenaInstance.isClosed())
 			closed = "&c&lCLOSED";
 		else closed = "&a&lOPEN";
-		inv.setItem(4, Utils.createItem(Material.NETHER_BRICK_FENCE, Utils.format("&9&lClose Arena: " + closed)));
+		inv.setItem(5, Utils.createItem(Material.NETHER_BRICK_FENCE, Utils.format("&9&lClose Arena: " + closed)));
 
 		// Option to remove arena
-		inv.setItem(5, InventoryItems.remove("ARENA"));
+		inv.setItem(6, InventoryItems.remove("ARENA"));
 
 		// Option to exit
 		inv.setItem(8, InventoryItems.exit());

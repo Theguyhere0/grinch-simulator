@@ -1,15 +1,14 @@
 package me.theguyhere.grinchsimulator.listeners;
 
+import me.theguyhere.grinchsimulator.GUI.InventoryItems;
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.events.LeaveArenaEvent;
-import me.theguyhere.grinchsimulator.game.models.GameItems;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaStatus;
 import me.theguyhere.grinchsimulator.tools.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,7 +22,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class GameListener implements Listener {
 	private final Main plugin;
@@ -71,7 +69,7 @@ public class GameListener implements Listener {
 		else item = Objects.requireNonNull(player.getEquipment()).getItemInMainHand();
 
 		// Make player leave
-		if (GameItems.leave().equals(item))
+		if (InventoryItems.leave().equals(item))
 			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
 					Bukkit.getPluginManager().callEvent(new LeaveArenaEvent(player)));
 
@@ -96,7 +94,7 @@ public class GameListener implements Listener {
 		// Attempt to get arena and player
 		try {
 			arena = Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).filter(a -> a.hasPlayer(player))
-					.collect(Collectors.toList()).get(0);
+					.toList().get(0);
 		} catch (Exception err) {
 			return;
 		}
@@ -124,7 +122,7 @@ public class GameListener implements Listener {
 			return;
 
 		Arena arena = Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).filter(a -> a.hasPlayer(player))
-				.collect(Collectors.toList()).get(0);
+				.toList().get(0);
 
 		// Check if the arena has started
 		if (arena.getStatus() == ArenaStatus.WAITING)
@@ -145,8 +143,8 @@ public class GameListener implements Listener {
 		if (Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).noneMatch(arena -> arena.hasPlayer(player)))
 			return;
 
-		// Check for standard game items item
-		if (item.equals(GameItems.leave()))
+		// Check for GUI items
+		if (item.equals(InventoryItems.leave()))
 			e.setCancelled(true);
 	}
 
@@ -159,7 +157,7 @@ public class GameListener implements Listener {
 		// Attempt to get arena and player
 		try {
 			arena = Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).filter(a -> a.hasPlayer(player))
-					.collect(Collectors.toList()).get(0);
+					.toList().get(0);
 			arena.getPlayer(player);
 		} catch (Exception err) {
 			return;
@@ -179,7 +177,7 @@ public class GameListener implements Listener {
 		// Attempt to get arena and player
 		try {
 			arena = Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).filter(a -> a.hasPlayer(player))
-					.collect(Collectors.toList()).get(0);
+					.toList().get(0);
 			arena.getPlayer(player);
 		} catch (Exception err) {
 			return;

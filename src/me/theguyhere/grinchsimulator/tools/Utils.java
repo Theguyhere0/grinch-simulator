@@ -1,5 +1,7 @@
 package me.theguyhere.grinchsimulator.tools;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import me.theguyhere.grinchsimulator.Main;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -9,8 +11,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.material.Skull;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -326,5 +331,43 @@ public class Utils {
         } else {
             return null;
         }
+    }
+
+    @NotNull
+    public static ItemStack getPlayerHeadByBase(String base) {
+        ItemStack head = createItem(Material.PLAYER_HEAD, "");
+        assert head != null;
+        SkullMeta meta = (SkullMeta) head.getItemMeta();
+        assert meta != null;
+        GameProfile profile = new GameProfile(UUID.randomUUID(), "");
+        profile.getProperties().put("textures", new Property("textures", base));
+        Field profileField;
+        try {
+            profileField = meta.getClass().getDeclaredField("profile");
+            profileField.setAccessible(true);
+            profileField.set(meta, profile);
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            return head;
+        }
+        head.setItemMeta(meta);
+        return head;
+    }
+
+    public static ItemStack rename(ItemStack original, String name) {
+        ItemMeta meta = original.getItemMeta();
+        assert meta != null;
+        meta.setDisplayName(name);
+        ItemStack newItem = original.clone();
+        newItem.setItemMeta(meta);
+        return newItem;
+    }
+
+    public static ItemStack relore(ItemStack original, String... lores) {
+        ItemMeta meta = original.getItemMeta();
+        assert meta != null;
+        meta.setLore(Arrays.asList(lores));
+        ItemStack newItem = original.clone();
+        newItem.setItemMeta(meta);
+        return newItem;
     }
 }

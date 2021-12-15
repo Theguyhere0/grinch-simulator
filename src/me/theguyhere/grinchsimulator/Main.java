@@ -14,6 +14,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class Main extends JavaPlugin {
     // Yaml file managers
@@ -111,6 +112,8 @@ public class Main extends JavaPlugin {
                     0);
             outdated = true;
         }
+
+        System.out.println(Bukkit.getOfflinePlayer(UUID.fromString("05cb96a4-01eb-4387-b8a3-48028d43422b")).getName());
     }
 
     @Override

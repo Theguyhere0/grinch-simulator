@@ -9,9 +9,8 @@ import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaStatus;
 import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
 import me.theguyhere.grinchsimulator.tools.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Random;
 
 public class GameListener implements Listener {
 	private final Main plugin;
@@ -54,27 +54,63 @@ public class GameListener implements Listener {
 		e.setCancelled(true);
 	}
 
-	// Pre game items or editor items
+	// Handle using pre game items, editor items, or clicking on present
 	@EventHandler
 	public void onInteract(PlayerInteractEvent e) {
 		// Check for right click
 		if (e.getAction() != Action.RIGHT_CLICK_AIR && e.getAction() != Action.RIGHT_CLICK_BLOCK)
 			return;
 
-		Player player = e.getPlayer();
-
-		// Get item in hand
-		ItemStack item;
+		// Check for main hand
 		if (e.getHand() == EquipmentSlot.OFF_HAND)
-			item = Objects.requireNonNull(player.getEquipment()).getItemInOffHand();
-		else item = Objects.requireNonNull(player.getEquipment()).getItemInMainHand();
+			return;
+
+		Player player = e.getPlayer();
+		Block block = e.getClickedBlock();
+		ItemStack item = Objects.requireNonNull(player.getEquipment()).getItemInMainHand();
 
 		// See if the player is in a game
 		if (Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).anyMatch(a -> a.hasPlayer(player))) {
+			Arena arena = Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull)
+					.filter(a -> a.hasPlayer(player)).toList().get(0);
+
 			// Make player leave
 			if (InventoryItems.leave().equals(item))
 				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
 						Bukkit.getPluginManager().callEvent(new LeaveArenaEvent(player)));
+
+			// Handle present
+			else if (block != null && arena.checkPresent(block.getLocation())) {
+				Location blockLocation = block.getLocation();
+
+				// Check for head
+				if (block.getType() != Material.PLAYER_HEAD) {
+					arena.removePresent(blockLocation);
+					return;
+				}
+
+				// Check for arena in session
+				if (arena.getStatus() != ArenaStatus.ACTIVE)
+					return;
+
+				// Check if already found
+				if (arena.checkFound(blockLocation)) {
+					// Todo
+					player.sendMessage(Utils.notify("&cPresent already found!"));
+					return;
+				}
+
+				arena.findPresent(blockLocation);
+
+				// Spawn particles
+				Random r = new Random();
+				player.spawnParticle(Particle.HEART, blockLocation.add(.5, .5 , .5), 5,
+						r.nextDouble() / 2.5, r.nextDouble() / 2.5, r.nextDouble() / 2.5);
+				player.spawnParticle(Particle.VILLAGER_HAPPY, blockLocation, 5, r.nextDouble() / 2.5,
+						r.nextDouble() / 2.5, r.nextDouble() / 2.5);
+				player.playSound(blockLocation, Sound.BLOCK_NOTE_BLOCK_BELL, 2F, (float) 1.82);
+			}
+
 
 			// Ignore
 			else return;
@@ -141,21 +177,36 @@ public class GameListener implements Listener {
 		arena.addPresent(PresentType.valueOf(name.substring(4, name.indexOf(" ")).toUpperCase()), location);
 	}
 
+	// Handles breaking and placing of presents
 	@EventHandler
 	public void onBlockBreak(BlockBreakEvent e) {
 		Player player = e.getPlayer();
+		Location blockLocation = e.getBlock().getLocation();
 
-		// Check for editor
-		if (Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).noneMatch(a -> a.hasEditor(player)))
+		// Check for present
+		if (Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull)
+				.noneMatch(a -> a.checkPresent(blockLocation)))
 			return;
 
-		Arena arena = Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull)
-				.filter(a -> a.hasEditor(player)).toList().get(0);
+		// Check for head
+		if (e.getBlock().getType() != Material.PLAYER_HEAD) {
+			Arena arena = Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull)
+					.filter(a -> a.hasEditor(player)).toList().get(0);
+			arena.removePresent(blockLocation);
+		}
 
-		// Remove present
-		if (arena.removePresent(e.getBlock().getLocation()))
-			player.sendMessage(Utils.notify("&aPresent removed!"));
-		System.out.println("reached");
+		// Check for editor
+		if (Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).anyMatch(a -> a.hasEditor(player))) {
+			Arena arena = Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull)
+					.filter(a -> a.hasEditor(player)).toList().get(0);
+
+			// Remove present
+			if (arena.removePresent(blockLocation))
+				player.sendMessage(Utils.notify("&aPresent removed!"));
+		} else {
+			e.setCancelled(true);
+			player.sendMessage(Utils.notify("&cPresent must be removed through Arena settings!"));
+		}
 	}
 
 	// Handles players falling into the void

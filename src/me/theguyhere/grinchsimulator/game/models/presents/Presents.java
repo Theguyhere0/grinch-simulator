@@ -24,7 +24,7 @@ public class Presents {
     public static final ItemStack PINK_PRESENT = Utils.getPlayerHeadByBase("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTBjNzVhMDViMzQ0ZWEwNDM4NjM5NzRjMTgwYmE4MTdhZWE2ODY3OGNiZWE1ZTRiYTM5NWY3NGQ0ODAzZDFkIn19fQ==");
     public static final ItemStack WHITE_PRESENT = Utils.getPlayerHeadByBase("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzEyYjZkNWYwNzFiOWEzYzI3ZmY0ZmJmODFhZjBiOGI0NjE4ZTA4OGZiZTVmOWQ5ZDY4ZmEwY2E5MzhkMWY4ZCJ9fX0=");
 
-    public ItemStack getByType(PresentType type) {
+    public static ItemStack getByType(PresentType type) {
         switch (type) {
             case WOOD -> {
                 return WOOD_PRESENT;

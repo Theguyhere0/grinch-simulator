@@ -6,13 +6,17 @@ import me.theguyhere.grinchsimulator.Main;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Skull;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Rotatable;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.material.Skull;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
@@ -276,9 +280,7 @@ public class Utils {
     public static List<Location> getConfigLocationList(Main plugin, String path) {
         List<Location> locations = new ArrayList<>();
         try {
-            Objects.requireNonNull(plugin.getArenaData().getList(path)).forEach(o -> {
-                locations.add((Location) o);
-            });
+            Objects.requireNonNull(plugin.getArenaData().getList(path)).forEach(o -> locations.add((Location) o));
         } catch (Exception e) {
             debugError("Section " + path + " is invalid.", 1);
         }
@@ -298,8 +300,7 @@ public class Utils {
             else location.setZ(((int) location.getZ()) - .5);
             setConfigurationLocation(plugin, path, location);
             plugin.saveArenaData();
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) { }
     }
 
     // Convert seconds to ticks
@@ -364,6 +365,37 @@ public class Utils {
         }
         head.setItemMeta(meta);
         return head;
+    }
+
+    public static void placeSkull(Location location) {
+        BlockFace bFace;
+        Block b = location.getBlock();
+
+        switch ((int) ((location.getYaw() + 191.25) / 22.5)) {
+            case 0 -> bFace = BlockFace.NORTH;
+            case 1 -> bFace = BlockFace.NORTH_NORTH_EAST;
+            case 2 -> bFace = BlockFace.NORTH_EAST;
+            case 3 -> bFace = BlockFace.EAST_NORTH_EAST;
+            case 4 -> bFace = BlockFace.EAST;
+            case 5 -> bFace = BlockFace.EAST_SOUTH_EAST;
+            case 6 -> bFace = BlockFace.SOUTH_EAST;
+            case 7 -> bFace = BlockFace.SOUTH_SOUTH_EAST;
+            case 8 -> bFace = BlockFace.SOUTH;
+            case 9 -> bFace = BlockFace.SOUTH_SOUTH_WEST;
+            case 10 -> bFace = BlockFace.SOUTH_WEST;
+            case 11 -> bFace = BlockFace.WEST_SOUTH_WEST;
+            case 12 -> bFace = BlockFace.WEST;
+            case 13 -> bFace = BlockFace.WEST_NORTH_WEST;
+            case 14 -> bFace = BlockFace.NORTH_WEST;
+            default -> bFace = BlockFace.NORTH_NORTH_WEST;
+        }
+
+        b.setType(Material.PLAYER_HEAD);
+        BlockData blockData = b.getBlockData();
+        ((Rotatable) blockData).setRotation(bFace);
+        b.setBlockData(blockData);
+        Skull skull = (Skull) b.getState();
+        skull.update(true);
     }
 
     public static ItemStack rename(ItemStack original, String name) {

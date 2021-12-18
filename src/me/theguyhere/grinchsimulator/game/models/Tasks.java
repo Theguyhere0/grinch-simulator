@@ -174,6 +174,9 @@ public class Tasks {
 				arenaInstance.getPlayers().forEach(player ->
 						player.getPlayer().stopSound(arenaInstance.getWaitingSound()));
 
+			// Start present particles
+			arenaInstance.startPresentParticles();
+
 //			arenaInstance.getActives().forEach(player -> {
 //				// Give all players starting items
 //				giveItems(player);
@@ -208,6 +211,9 @@ public class Tasks {
 
 			// Refresh portal
 			arenaInstance.refreshPortal();
+
+			// Reset presents
+			arenaInstance.resetPresents();
 
 			// Debug message to console
 			Utils.debugInfo("Arena " + arena + " is resetting.", 2);

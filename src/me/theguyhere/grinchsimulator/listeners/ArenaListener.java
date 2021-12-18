@@ -1,7 +1,6 @@
 package me.theguyhere.grinchsimulator.listeners;
 
 import me.theguyhere.grinchsimulator.GUI.Inventories;
-import me.theguyhere.grinchsimulator.GUI.InventoryItems;
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.events.*;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
@@ -22,7 +21,6 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.DisplaySlot;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ArenaListener implements Listener {
     private final Main plugin;
@@ -397,6 +395,7 @@ public class ArenaListener implements Listener {
             Bukkit.getScheduler().cancelTask(tasks.get(task.updateBar));
             tasks.remove(task.updateBar);
             arena.removeTimeLimitBar();
+            arena.cancelPresentParticles();
         }
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
                 Bukkit.getPluginManager().callEvent(new ArenaResetEvent(arena)), Utils.secondsToTicks(10));

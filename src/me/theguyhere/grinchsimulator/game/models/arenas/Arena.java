@@ -9,10 +9,7 @@ import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
 import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
 import me.theguyhere.grinchsimulator.tools.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -54,6 +51,10 @@ public class Arena {
 //    private ArenaBoard arenaBoard;
     /** A list of players that are editing the map.*/
     private final List<Player> editors = new ArrayList<>();
+    /** A list of states of hidden presents.*/
+    private final List<Location> found = new ArrayList<>();
+    /** ID of task managing present particles.*/
+    private int presentParticlesID = 0;
 
     public Arena(Main plugin, int arena, Tasks task) {
         this.plugin = plugin;
@@ -111,7 +112,6 @@ public class Arena {
             setWinSound(true);
             setLoseSound(true);
             setWaveStartSound(true);
-            setWaveFinishSound(true);
             setWaitingSound(14);
         }
 
@@ -145,14 +145,64 @@ public class Arena {
         return config.getInt(path + ".min");
     }
 
+    public void startPresentParticles() {
+        if (presentParticlesID != 0)
+            return;
+
+        presentParticlesID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            try {
+                found.forEach(location -> Objects.requireNonNull(location.getWorld())
+                        .spawnParticle(Particle.BARRIER, location.clone().add(.5, .25, .5), 1));
+                System.out.println(found);
+            } catch (Exception e) {
+                Utils.debugError(String.format("Present particle generation error for arena %d.", arena),
+                        2);
+            }
+        }, 0 , 80);
+    }
+
+    public void cancelPresentParticles() {
+        if (presentParticlesID != 0)
+            Bukkit.getScheduler().cancelTask(presentParticlesID);
+        presentParticlesID = 0;
+    }
+
     public void addPresent(PresentType type, Location location) {
         List<Location> newList = getPresents(type);
-        System.out.println(newList);
         if (newList == null)
             newList = new ArrayList<>();
         newList.add(location);
         plugin.getArenaData().set(path + ".presents." + type.label, newList);
         plugin.saveArenaData();
+    }
+
+    public boolean checkPresent(Location location) {
+        try {
+            if (Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents"))
+                    .getKeys(false).stream().anyMatch(type -> Utils.getConfigLocationList(plugin,
+                            path + ".presents." + type).stream().anyMatch(loc -> {
+                        loc.setYaw(0);
+                        return loc.equals(location);
+                    })))
+                return true;
+        } catch (Exception ignored) {
+        }
+        return false;
+    }
+
+    public void findPresent(Location location) {
+        found.add(location.add(-.5, -.5, -.5));
+        Objects.requireNonNull(location.getWorld()).spawnParticle(Particle.BARRIER,
+                location.clone().add(1, .75, 1), 1);
+    }
+
+    public boolean checkFound(Location location) {
+        System.out.println(found.contains(location));
+        return found.contains(location);
+    }
+
+    public void resetPresents() {
+        found.clear();
     }
 
     private void safeRemovePresent(Location location, PresentType type) {
@@ -168,13 +218,9 @@ public class Arena {
 
     public boolean removePresent(Location location) {
         try {
-            if (Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents"))
-                    .getKeys(false).stream().anyMatch(type -> Utils.getConfigLocationList(plugin,
-                            path + ".presents." + type).stream().anyMatch(loc -> {
-                                loc.setYaw(0);
-                                return loc.equals(location);
-                            }))) {
-                String presentType = Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents"))
+            if (checkPresent(location)) {
+                String presentType = Objects.requireNonNull(plugin.getArenaData()
+                                .getConfigurationSection(path + ".presents"))
                         .getKeys(false).stream().filter(type -> Utils.getConfigLocationList(plugin,
                                 path + ".presents." + type).stream().anyMatch(loc -> {
                             loc.setYaw(0);
@@ -607,15 +653,6 @@ public class Arena {
         plugin.saveArenaData();
     }
 
-    public boolean hasWaveFinishSound() {
-        return config.getBoolean(path + ".sounds.end");
-    }
-
-    public void setWaveFinishSound(boolean bool) {
-        config.set(path + ".sounds.end", bool);
-        plugin.saveArenaData();
-    }
-    
     public boolean isClosed() {
         return config.getBoolean(path + ".closed");
     }
@@ -853,7 +890,6 @@ public class Arena {
         setWinSound(arenaToCopy.hasWinSound());
         setLoseSound(arenaToCopy.hasLoseSound());
         setWaveStartSound(arenaToCopy.hasWaveStartSound());
-        setWaveFinishSound(arenaToCopy.hasWaveFinishSound());
         setWaitingSound(arenaToCopy.getWaitingSoundNum());
         if (config.contains("a" + arenaToCopy.getArena() + ".customShop"))
             try {

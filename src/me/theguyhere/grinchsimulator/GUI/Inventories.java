@@ -1,7 +1,8 @@
 package me.theguyhere.grinchsimulator.GUI;
 
 import me.theguyhere.grinchsimulator.Main;
-import me.theguyhere.grinchsimulator.game.models.Presents;
+import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
+import me.theguyhere.grinchsimulator.game.models.presents.Presents;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
 import me.theguyhere.grinchsimulator.tools.Utils;
@@ -685,6 +686,195 @@ public class Inventories {
 		return inv;
 	}
 
+	// Menu for editing the present settings of an arena
+	public static Inventory createPresentSettingsInventory(int arena) {
+		Arena arenaInstance = ArenaManager.getArena(arena);
+
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&b&lPresent Settings: " + arenaInstance.getName()));
+
+		// Option to edit presents
+		inv.setItem(1, Utils.createItem(Material.CRAFTING_TABLE, Utils.format("&a&lAdd/Remove Presents")));
+
+		// Option to delete presents by type
+		inv.setItem(3, Utils.createItem(Material.LAVA_BUCKET, Utils.format("&4&lDelete Presents by Type")));
+
+		// Option to edit present values
+		inv.setItem(5, Utils.rename(Presents.GOLD_PRESENT, Utils.format("&6&lPresent Values")));
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Menu for deleting presents
+	public static Inventory createPresentDeleteInventory(int arena) {
+		Arena arenaInstance = ArenaManager.getArena(arena);
+
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 27, Utils.format("&k") +
+				Utils.format("&4&lDelete Presents: " + arenaInstance.getName()));
+
+		// All present options
+		inv.setItem(0, Utils.rename(Presents.WOOD_PRESENT, Utils.format("&5&lWood Presents")));
+		inv.setItem(1, Utils.rename(Presents.STONE_PRESENT, Utils.format("&8&lStone Presents")));
+		inv.setItem(2, Utils.rename(Presents.IRON_PRESENT, Utils.format("&7&lIron Presents")));
+		inv.setItem(3, Utils.rename(Presents.COPPER_PRESENT, Utils.format("&3&lCopper Presents")));
+		inv.setItem(4, Utils.rename(Presents.GOLD_PRESENT, Utils.format("&6&lGold Presents")));
+		inv.setItem(5, Utils.rename(Presents.DIAMOND_PRESENT, Utils.format("&b&lDiamond Presents")));
+		inv.setItem(6, Utils.rename(Presents.EMERALD_PRESENT, Utils.format("&a&lEmerald Presents")));
+		inv.setItem(7, Utils.rename(Presents.NETHERITE_PRESENT, Utils.format("&7&lNetherite Presents")));
+		inv.setItem(8, Utils.rename(Presents.BLACK_PRESENT, Utils.format("&8&lBlack Presents")));
+		inv.setItem(9, Utils.rename(Presents.BROWN_PRESENT, Utils.format("&5&lBrown Presents")));
+		inv.setItem(10, Utils.rename(Presents.RED_PRESENT, Utils.format("&c&lRed Presents")));
+		inv.setItem(11, Utils.rename(Presents.ORANGE_PRESENT, Utils.format("&6&lOrange Presents")));
+		inv.setItem(12, Utils.rename(Presents.YELLOW_PRESENT, Utils.format("&e&lYellow Presents")));
+		inv.setItem(13, Utils.rename(Presents.GREEN_PRESENT, Utils.format("&2&lGreen Presents")));
+		inv.setItem(14, Utils.rename(Presents.CYAN_PRESENT, Utils.format("&3&lCyan Presents")));
+		inv.setItem(15, Utils.rename(Presents.BLUE_PRESENT, Utils.format("&9&lBlue Presents")));
+		inv.setItem(16, Utils.rename(Presents.PURPLE_PRESENT, Utils.format("&5&lPurple Presents")));
+		inv.setItem(17, Utils.rename(Presents.PINK_PRESENT, Utils.format("&d&lPink Presents")));
+		inv.setItem(21, Utils.rename(Presents.WHITE_PRESENT, Utils.format("&f&lWhite Presents")));
+
+		// All presents option
+		inv.setItem(23, Utils.createItem(Material.CHEST, Utils.format("&4&lAll Presents")));
+
+		// Option to exit
+		inv.setItem(26, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Confirmation menu for removing a specific type of present
+	public static Inventory createPresentDeleteConfirmInventory(int arena, PresentType type) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(type.label.toUpperCase(), arena), 9,
+				Utils.format("&k") + Utils.format("&4&lRemove " +
+						type.label.substring(0, 1).toUpperCase() + type.label.substring(1) + " Presents?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
+
+	// Confirmation menu for removing all presents
+	public static Inventory createPresentsDeleteConfirmInventory(int arena) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&4&lRemove All Presents?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
+
+	// Menu for editing the value of presents
+	public static Inventory createPresentValueInventory(int arena) {
+		Arena arenaInstance = ArenaManager.getArena(arena);
+
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 27, Utils.format("&k") +
+				Utils.format("&6&lPresent Values: " + arenaInstance.getName()));
+
+		// All present options
+		inv.setItem(0, Utils.rename(Presents.WOOD_PRESENT, Utils.format("&5&lWood Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.WOOD)));
+		inv.setItem(1, Utils.rename(Presents.STONE_PRESENT, Utils.format("&8&lStone Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.STONE)));
+		inv.setItem(2, Utils.rename(Presents.IRON_PRESENT, Utils.format("&7&lIron Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.IRON)));
+		inv.setItem(3, Utils.rename(Presents.COPPER_PRESENT, Utils.format("&3&lCopper Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.COPPER)));
+		inv.setItem(4, Utils.rename(Presents.GOLD_PRESENT, Utils.format("&6&lGold Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.GOLD)));
+		inv.setItem(5, Utils.rename(Presents.DIAMOND_PRESENT, Utils.format("&b&lDiamond Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.DIAMOND)));
+		inv.setItem(6, Utils.rename(Presents.EMERALD_PRESENT, Utils.format("&a&lEmerald Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.EMERALD)));
+		inv.setItem(7, Utils.rename(Presents.NETHERITE_PRESENT, Utils.format("&7&lNetherite Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.NETHERITE)));
+		inv.setItem(8, Utils.rename(Presents.BLACK_PRESENT, Utils.format("&8&lBlack Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.BLACK)));
+		inv.setItem(9, Utils.rename(Presents.BROWN_PRESENT, Utils.format("&5&lBrown Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.BROWN)));
+		inv.setItem(10, Utils.rename(Presents.RED_PRESENT, Utils.format("&c&lRed Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.RED)));
+		inv.setItem(11, Utils.rename(Presents.ORANGE_PRESENT, Utils.format("&6&lOrange Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.ORANGE)));
+		inv.setItem(12, Utils.rename(Presents.YELLOW_PRESENT, Utils.format("&e&lYellow Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.YELLOW)));
+		inv.setItem(13, Utils.rename(Presents.GREEN_PRESENT, Utils.format("&2&lGreen Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.GREEN)));
+		inv.setItem(14, Utils.rename(Presents.CYAN_PRESENT, Utils.format("&3&lCyan Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.CYAN)));
+		inv.setItem(15, Utils.rename(Presents.BLUE_PRESENT, Utils.format("&9&lBlue Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.BLUE)));
+		inv.setItem(16, Utils.rename(Presents.PURPLE_PRESENT, Utils.format("&5&lPurple Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.PURPLE)));
+		inv.setItem(17, Utils.rename(Presents.PINK_PRESENT, Utils.format("&d&lPink Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.PINK)));
+		inv.setItem(21, Utils.rename(Presents.WHITE_PRESENT, Utils.format("&f&lWhite Presents: ")
+				+ arenaInstance.getPresentValue(PresentType.WHITE)));
+
+		// All presents option
+		inv.setItem(23, Utils.createItem(Material.BEDROCK, Utils.format("&4&lReset Values"),
+				Utils.format("&7Resets all present values back to 1")));
+
+		// Option to exit
+		inv.setItem(26, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Menu for changing present value in an arena
+	public static Inventory createPresentValueMenu(int arena, PresentType type) {
+		Arena arenaInstance = ArenaManager.getArena(arena);
+
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(type.label.toUpperCase(), arena), 9,
+				Utils.format("&k") +
+				Utils.format("&6&l" + type.label.substring(0, 1).toUpperCase() + type.label.substring(1) +
+						" Present Value: " + arenaInstance.getPresentValue(type)));
+
+		// Option to decrease
+		for (int i = 0; i < 4; i++)
+			inv.setItem(i, Utils.createItem(Material.RED_CONCRETE, Utils.format("&4&lDecrease")));
+
+		// Option to increase
+		for (int i = 4; i < 8; i++)
+			inv.setItem(i, Utils.createItem(Material.LIME_CONCRETE, Utils.format("&2&lIncrease")));
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Confirmation menu for resetting all present values
+	public static Inventory createPresentsResetConfirmInventory(int arena) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&4&lReset All Presents?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
+
 	// Menu for editing the game settings of an arena
 	public static Inventory createGameSettingsInventory(int arena) {
 		Arena arenaInstance = ArenaManager.getArena(arena);
@@ -955,6 +1145,24 @@ public class Inventories {
 		EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
 		entityPlayer.playerConnection.sendPacket(sign.getUpdatePacket());
 		entityPlayer.playerConnection.sendPacket(new PacketPlayOutOpenSignEditor(blockPosition));
+	}
+
+	// Set the pre game hotbar
+	public static void setPreGameHotbar(Player player) {
+		Inventory inv = player.getInventory();
+
+		inv.setItem(6, InventoryItems.leave());
+	}
+
+	// Set a specific iteration of the editor hotbar
+	public static void setEditorHotbar(Player player, int index) {
+		Inventory inv = player.getInventory();
+
+		inv.setItem(0, InventoryItems.previous());
+		for (int i = index; i < index + 6; i++)
+			inv.setItem(i - index + 1, InventoryItems.presents()[i % InventoryItems.presents().length]);
+		inv.setItem(7, InventoryItems.next());
+		inv.setItem(8, InventoryItems.exit());
 	}
 
 	// Easy way to get a string for a toggle status

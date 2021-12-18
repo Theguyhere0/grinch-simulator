@@ -9,6 +9,7 @@ import me.theguyhere.grinchsimulator.events.SignGUIEvent;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
+import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
 import me.theguyhere.grinchsimulator.tools.Utils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
@@ -26,6 +27,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -555,6 +557,10 @@ public class InventoryListener implements Listener {
 			else if (buttonName.contains("Player Settings"))
 				player.openInventory(Inventories.createPlayersInventory(meta.getInteger1()));
 
+			// Open presents menu
+			else if (buttonName.contains("Present Settings"))
+				player.openInventory(Inventories.createPresentSettingsInventory(meta.getInteger1()));
+
 			// Open game settings menu
 			else if (buttonName.contains("Game Settings"))
 				player.openInventory(Inventories.createGameSettingsInventory(meta.getInteger1()));
@@ -612,7 +618,7 @@ public class InventoryListener implements Listener {
 		}
 
 		// Confirmation menus
-		else if (title.contains("Remove")) {
+		else if (title.contains("Remove") || title.contains("Reset")) {
 			InventoryMeta meta = (InventoryMeta) e.getInventory().getHolder();
 			assert meta != null;
 
@@ -836,6 +842,58 @@ public class InventoryListener implements Listener {
 //					player.openInventory(Inventories.createTopWaveLeaderboardInventory(plugin));
 //				}
 //			}
+
+			// Confirm to delete all presents
+			else if (title.contains("Remove All Presents?")) {
+				// Return to previous menu
+				if (buttonName.contains("NO"))
+					player.openInventory(Inventories.createPresentDeleteInventory(meta.getInteger1()));
+
+				// Delete all presents, then return to previous menu
+				else if (buttonName.contains("YES")) {
+					// Remove all presents
+					ArenaManager.getArena(meta.getInteger1()).removeAllPresents();
+
+					// Confirm and return
+					player.sendMessage(Utils.notify("&aAll presents removed!"));
+					player.openInventory(Inventories.createPresentDeleteInventory(meta.getInteger1()));
+				}
+			}
+
+			// Confirm to delete all of a specific type of present
+			else if (title.contains("Remove ") && title.contains(" Presents?")) {
+				// Return to previous menu
+				if (buttonName.contains("NO"))
+					player.openInventory(Inventories.createPresentDeleteInventory(meta.getInteger1()));
+
+				// Delete the presents, then return to previous menu
+				else if (buttonName.contains("YES")) {
+					// Delete the presents
+					ArenaManager.getArena(meta.getInteger1()).removePresents(PresentType.valueOf(meta.getString()));
+
+					// Confirm and return
+					player.sendMessage(Utils.notify("&a" + meta.getString().charAt(0) +
+							meta.getString().substring(1).toLowerCase() + " presents removed!"));
+					player.openInventory(Inventories.createPresentDeleteInventory(meta.getInteger1()));
+				}
+			}
+
+			// Confirm to reset all present values
+			else if (title.contains("Reset All Presents?")) {
+				// Return to previous menu
+				if (buttonName.contains("NO"))
+					player.openInventory(Inventories.createPresentValueInventory(meta.getInteger1()));
+
+				// Delete all presents, then return to previous menu
+				else if (buttonName.contains("YES")) {
+					// Reset all present values
+					ArenaManager.getArena(meta.getInteger1()).resetPresentValues();
+
+					// Confirm and return
+					player.sendMessage(Utils.notify("&aAll presents values reset!"));
+					player.openInventory(Inventories.createPresentValueInventory(meta.getInteger1()));
+				}
+			}
 
 			// Confirm to remove arena
 			else {
@@ -1191,6 +1249,133 @@ public class InventoryListener implements Listener {
 			// Exit menu
 			else if (buttonName.contains("EXIT"))
 				player.openInventory(Inventories.createPlayersInventory(meta.getInteger1()));
+		}
+
+		// Present settings menu for an arena
+		else if (title.contains("Present Settings:")) {
+			InventoryMeta meta = (InventoryMeta) e.getInventory().getHolder();
+			assert meta != null;
+			Arena arenaInstance = ArenaManager.getArena(meta.getInteger1());
+
+			// Edit presents
+			if (buttonName.contains("Add/Remove Presents")) {
+				// Check for arena closure
+				if (!arenaInstance.isClosed()) {
+					player.sendMessage(Utils.notify("&cArena must be closed to modify this!"));
+					return;
+				}
+
+				arenaInstance.addEditor(player);
+				player.closeInventory();
+			}
+
+			// Delete presents by type
+			else if (buttonName.contains("Delete Presents by Type")) {
+				// Check for arena closure
+				if (!arenaInstance.isClosed()) {
+					player.sendMessage(Utils.notify("&cArena must be closed to modify this!"));
+					return;
+				}
+
+				player.openInventory(Inventories.createPresentDeleteInventory(meta.getInteger1()));
+			}
+
+			// Edit present values
+			else if (buttonName.contains("Present Values"))
+				player.openInventory(Inventories.createPresentValueInventory(meta.getInteger1()));
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createArenaInventory(meta.getInteger1()));
+		}
+
+		// Delete presents for an arena
+		else if (title.contains("Delete Presents:")) {
+			InventoryMeta meta = (InventoryMeta) e.getInventory().getHolder();
+			assert meta != null;
+
+			// Delete all instances of a specific present type
+			if (buttonName.contains("Presents") && !buttonName.contains("All"))
+				player.openInventory(Inventories.createPresentDeleteConfirmInventory(meta.getInteger1(),
+						PresentType.valueOf(buttonName.substring(4, buttonName.indexOf(" ")).toUpperCase())));
+
+			// Delete all presents
+			else if (buttonName.contains("All Presents"))
+				player.openInventory(Inventories.createPresentsDeleteConfirmInventory(meta.getInteger1()));
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createPresentSettingsInventory(meta.getInteger1()));
+		}
+
+		// Present value setting menu for an arena
+		else if (title.contains("Present Values:")) {
+			InventoryMeta meta = (InventoryMeta) e.getInventory().getHolder();
+			assert meta != null;
+			Arena arenaInstance = ArenaManager.getArena(meta.getInteger1());
+
+			// Edit value of a specific present type
+			if (buttonName.contains("Presents"))
+				player.openInventory(Inventories.createPresentValueMenu(meta.getInteger1(),
+						PresentType.valueOf(buttonName.substring(4, buttonName.indexOf(" ")).toUpperCase())));
+
+			// Reset all values
+			else if (buttonName.contains("Reset Values")) {
+				// Check for arena closure
+				if (!arenaInstance.isClosed()) {
+					player.sendMessage(Utils.notify("&cArena must be closed to modify this!"));
+					return;
+				}
+
+				player.openInventory(Inventories.createPresentsResetConfirmInventory(meta.getInteger1()));
+			}
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createPresentSettingsInventory(meta.getInteger1()));
+		}
+
+		// Present value menu for an arena
+		else if (title.contains("Present Value: ")) {
+			InventoryMeta meta = (InventoryMeta) e.getInventory().getHolder();
+			assert meta != null;
+			Arena arenaInstance = ArenaManager.getArena(meta.getInteger1());
+			PresentType type = PresentType.valueOf(meta.getString());
+			int current = arenaInstance.getPresentValue(type);
+
+			// Decrease value
+			if (buttonName.contains("Decrease")) {
+				// Check for arena closure
+				if (!arenaInstance.isClosed()) {
+					player.sendMessage(Utils.notify("&cArena must be closed to modify this!"));
+					return;
+				}
+
+				// Check if present value is greater than 1
+				if (current <= 1) {
+					player.sendMessage(Utils.notify("&cPresent value cannot be less than 1!"));
+					return;
+				}
+
+				arenaInstance.setPresentValue(type, --current);
+				player.openInventory(Inventories.createPresentValueMenu(meta.getInteger1(), type));
+			}
+
+			// Increase value
+			else if (buttonName.contains("Increase")) {
+				// Check for arena closure
+				if (!arenaInstance.isClosed()) {
+					player.sendMessage(Utils.notify("&cArena must be closed to modify this!"));
+					return;
+				}
+
+				arenaInstance.setPresentValue(type, ++current);
+				player.openInventory(Inventories.createPresentValueMenu(meta.getInteger1(), type));
+			}
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createPresentValueInventory(meta.getInteger1()));
 		}
 
 		// Game settings menu for an arena

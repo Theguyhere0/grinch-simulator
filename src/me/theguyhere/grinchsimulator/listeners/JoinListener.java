@@ -104,5 +104,13 @@ public class JoinListener implements Listener {
 			plugin.getPlayerData().set("loggers", loggers);
 			plugin.savePlayerData();
 		}
+
+		// Handle editors logging
+		if (Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull)
+				.anyMatch(arena -> arena.hasEditor(player))) {
+			Utils.debugInfo(player.getName() + " logged out mid-editing.", 2);
+			Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).filter(a -> a.hasEditor(player)).toList()
+					.get(0).removeEditor(player);
+		}
 	}
 }

@@ -1,6 +1,7 @@
 package me.theguyhere.grinchsimulator;
 
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
+import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
 import me.theguyhere.grinchsimulator.listeners.*;
 import me.theguyhere.grinchsimulator.packets.MetadataHelper;
 import me.theguyhere.grinchsimulator.packets.PacketReader;
@@ -112,8 +113,6 @@ public class Main extends JavaPlugin {
                     0);
             outdated = true;
         }
-
-        System.out.println(Bukkit.getOfflinePlayer(UUID.fromString("05cb96a4-01eb-4387-b8a3-48028d43422b")).getName());
     }
 
     @Override

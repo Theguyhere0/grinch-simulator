@@ -1,5 +1,6 @@
 package me.theguyhere.grinchsimulator.listeners;
 
+import me.theguyhere.grinchsimulator.GUI.Inventories;
 import me.theguyhere.grinchsimulator.GUI.InventoryItems;
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.events.*;
@@ -118,8 +119,8 @@ public class ArenaListener implements Listener {
                     Utils.debugError(err.getMessage(), 0);
                 }
 
-            // Give player choice options
-            player.getInventory().setItem(6, InventoryItems.leave());
+            // Give player pre game hotbar
+            Inventories.setPreGameHotbar(player);
 
             // Debug message to console
             Utils.debugInfo(player.getName() + "joined Arena " + arena.getArena(), 2);
@@ -234,7 +235,7 @@ public class ArenaListener implements Listener {
         // Attempt to get arena and player
         try {
             arena = Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).filter(a -> a.hasPlayer(player))
-                    .collect(Collectors.toList()).get(0);
+                    .toList().get(0);
             gamer = arena.getPlayer(player);
         } catch (Exception err) {
             e.setCancelled(true);

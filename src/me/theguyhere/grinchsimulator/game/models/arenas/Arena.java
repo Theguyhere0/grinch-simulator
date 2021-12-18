@@ -1,11 +1,13 @@
 package me.theguyhere.grinchsimulator.game.models.arenas;
 
+import me.theguyhere.grinchsimulator.GUI.Inventories;
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.exceptions.InvalidNameException;
 import me.theguyhere.grinchsimulator.exceptions.PlayerNotFoundException;
 import me.theguyhere.grinchsimulator.game.displays.Portal;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
+import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
 import me.theguyhere.grinchsimulator.tools.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -23,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * A class managing data about a Villager Defense arena.
@@ -51,6 +52,8 @@ public class Arena {
     private Portal portal;
 //    /** Arena scoreboard object for the arena.*/
 //    private ArenaBoard arenaBoard;
+    /** A list of players that are editing the map.*/
+    private final List<Player> editors = new ArrayList<>();
 
     public Arena(Main plugin, int arena, Tasks task) {
         this.plugin = plugin;
@@ -140,6 +143,99 @@ public class Arena {
      */
     public int getMinPlayers() {
         return config.getInt(path + ".min");
+    }
+
+    public void addPresent(PresentType type, Location location) {
+        List<Location> newList = getPresents(type);
+        System.out.println(newList);
+        if (newList == null)
+            newList = new ArrayList<>();
+        newList.add(location);
+        plugin.getArenaData().set(path + ".presents." + type.label, newList);
+        plugin.saveArenaData();
+    }
+
+    private void safeRemovePresent(Location location, PresentType type) {
+        // Remove from server
+        location.getBlock().setType(Material.AIR);
+
+        // Remove from files
+        List<Location> newList = getPresents(type);
+        newList.remove(location);
+        plugin.getArenaData().set(path + ".presents." + type.label, newList);
+        plugin.saveArenaData();
+    }
+
+    public boolean removePresent(Location location) {
+        try {
+            if (Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents"))
+                    .getKeys(false).stream().anyMatch(type -> Utils.getConfigLocationList(plugin,
+                            path + ".presents." + type).stream().anyMatch(loc -> {
+                                loc.setYaw(0);
+                                return loc.equals(location);
+                            }))) {
+                String presentType = Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents"))
+                        .getKeys(false).stream().filter(type -> Utils.getConfigLocationList(plugin,
+                                path + ".presents." + type).stream().anyMatch(loc -> {
+                            loc.setYaw(0);
+                            return loc.equals(location);
+                        })).toList().get(0).toUpperCase();
+                safeRemovePresent(location, PresentType.valueOf(presentType));
+                return true;
+            }
+        } catch (Exception ignored) {
+        }
+        return false;
+    }
+
+    public void removePresents(PresentType type) {
+        try {
+            Objects.requireNonNull(plugin.getArenaData().getList(path + ".presents." + type.label))
+                    .forEach(location -> safeRemovePresent((Location) location, type));
+        } catch (Exception ignored) { }
+    }
+
+    public void removeAllPresents() {
+        removePresents(PresentType.WOOD);
+        removePresents(PresentType.STONE);
+        removePresents(PresentType.IRON);
+        removePresents(PresentType.COPPER);
+        removePresents(PresentType.GOLD);
+        removePresents(PresentType.DIAMOND);
+        removePresents(PresentType.EMERALD);
+        removePresents(PresentType.NETHERITE);
+        removePresents(PresentType.BLACK);
+        removePresents(PresentType.BROWN);
+        removePresents(PresentType.RED);
+        removePresents(PresentType.ORANGE);
+        removePresents(PresentType.YELLOW);
+        removePresents(PresentType.GREEN);
+        removePresents(PresentType.CYAN);
+        removePresents(PresentType.BLUE);
+        removePresents(PresentType.PURPLE);
+        removePresents(PresentType.PINK);
+        removePresents(PresentType.WHITE);
+    }
+
+    public List<Location> getPresents(PresentType type) {
+        return Utils.getConfigLocationList(plugin, path + ".presents." + type.label);
+    }
+
+    public int getPresentValue(PresentType type) {
+        String newPath = path + ".presentValues." + type.label;
+        if (plugin.getArenaData().contains(newPath))
+            return plugin.getArenaData().getInt(newPath);
+        else return 1;
+    }
+
+    public void setPresentValue(PresentType type, int value) {
+        plugin.getArenaData().set(path + ".presentValues." + type.label, value);
+        plugin.saveArenaData();
+    }
+
+    public void resetPresentValues() {
+        plugin.getArenaData().set(path + ".presentValues", null);
+        plugin.saveArenaData();
     }
 
     /**
@@ -617,8 +713,7 @@ public class Arena {
     public GPlayer getPlayer(Player player) throws PlayerNotFoundException {
         try {
             return players.stream().filter(Objects::nonNull).filter(p -> p.getID().equals(player.getUniqueId()))
-                    .collect(Collectors.toList())
-                    .get(0);
+                    .toList().get(0);
         } catch (Exception e) {
             throw new PlayerNotFoundException("Player not in this arena.");
         }
@@ -702,12 +797,44 @@ public class Arena {
             timeLimitBar.removePlayer(player);
     }
 
+    public void addEditor(Player player) {
+        // Save player inventory before going into editor mode, then clear inventory
+        for (int i = 0; i < player.getInventory().getContents().length; i++)
+            plugin.getPlayerData().set(player.getName() + ".inventory." + i, player.getInventory().getContents()[i]);
+        plugin.savePlayerData();
+        player.getInventory().clear();
+
+        editors.add(player);
+
+        // Set initial editor hotbar
+        Inventories.setEditorHotbar(player, 0);
+    }
+
+    public void removeEditor(Player player) {
+        // Return player inventory before going into editor mode
+        player.getInventory().clear();
+        if (plugin.getPlayerData().contains(player.getName() + ".inventory"))
+            Objects.requireNonNull(plugin.getPlayerData()
+                            .getConfigurationSection(player.getName() + ".inventory"))
+                    .getKeys(false)
+                    .forEach(num -> player.getInventory().setItem(Integer.parseInt(num),
+                            (ItemStack) plugin.getPlayerData().get(player.getName() + ".inventory." + num)));
+        plugin.getPlayerData().set(player.getName() + ".inventory", null);
+        plugin.savePlayerData();
+
+        editors.remove(player);
+    }
+
+    public boolean hasEditor(Player player) {
+        return editors.contains(player);
+    }
+
     /**
      * Checks and closes an arena if the arena does not meet opening requirements.
      */
     public void checkClose() {
         if (!plugin.getArenaData().contains("lobby") ||
-//                getPortalLocation() == null ||
+                getPortalLocation() == null ||
                 getPlayerSpawn() == null) {
             setClosed(true);
             Utils.debugInfo(String.format("Arena %d did not meet opening requirements and was closed.", arena),
@@ -751,7 +878,7 @@ public class Arena {
      */
     public void remove() {
 //        removeArenaBoard();
-//        removePortal();
+        removePortal();
         config.set(path, null);
         plugin.saveArenaData();
         Utils.debugInfo(String.format("Removing arena %d.", arena), 1);

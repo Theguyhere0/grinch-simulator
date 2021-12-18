@@ -272,6 +272,19 @@ public class Utils {
         }
     }
 
+    // Gets a list of locations from a configuration path
+    public static List<Location> getConfigLocationList(Main plugin, String path) {
+        List<Location> locations = new ArrayList<>();
+        try {
+            Objects.requireNonNull(plugin.getArenaData().getList(path)).forEach(o -> {
+                locations.add((Location) o);
+            });
+        } catch (Exception e) {
+            debugError("Section " + path + " is invalid.", 1);
+        }
+        return locations;
+    }
+
     // Centers location data
     public static void centerConfigLocation(Main plugin, String path) {
         try {

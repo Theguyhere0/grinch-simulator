@@ -4,9 +4,11 @@ import me.theguyhere.grinchsimulator.GUI.Inventories;
 import me.theguyhere.grinchsimulator.GUI.InventoryItems;
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.events.LeaveArenaEvent;
+import me.theguyhere.grinchsimulator.exceptions.PlayerNotFoundException;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaStatus;
+import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
 import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
 import me.theguyhere.grinchsimulator.tools.Utils;
 import org.bukkit.*;
@@ -100,7 +102,8 @@ public class GameListener implements Listener {
 					return;
 				}
 
-				arena.findPresent(blockLocation);
+				// Find and update stats
+				arena.findPresent(player, blockLocation);
 
 				// Spawn particles
 				Random r = new Random();

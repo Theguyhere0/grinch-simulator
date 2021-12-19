@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A class managing data about a Villager Defense arena.
@@ -153,7 +154,6 @@ public class Arena {
             try {
                 found.forEach(location -> Objects.requireNonNull(location.getWorld())
                         .spawnParticle(Particle.BARRIER, location.clone().add(.5, .25, .5), 1));
-                System.out.println(found);
             } catch (Exception e) {
                 Utils.debugError(String.format("Present particle generation error for arena %d.", arena),
                         2);
@@ -190,14 +190,34 @@ public class Arena {
         return false;
     }
 
-    public void findPresent(Location location) {
-        found.add(location.add(-.5, -.5, -.5));
+    public void findPresent(Player player, Location location) {
+        GPlayer gamer;
+        // Make sure player is a gamer
+        try {
+            gamer = getPlayer(player);
+        } catch (PlayerNotFoundException e) {
+            return;
+        }
+
+        // Mark present as found
+        found.add(location.clone());
         Objects.requireNonNull(location.getWorld()).spawnParticle(Particle.BARRIER,
-                location.clone().add(1, .75, 1), 1);
+                location.clone().add(.5, .25, .5), 1);
+
+        // Update player stats
+        PresentType presentType = PresentType.valueOf(Objects.requireNonNull(plugin.getArenaData()
+                        .getConfigurationSection(path + ".presents"))
+                .getKeys(false).stream().filter(type -> Utils.getConfigLocationList(plugin,
+                        path + ".presents." + type).stream().anyMatch(loc -> {
+                            loc.setYaw(0);
+                            return loc.equals(location);
+                        })).toList().get(0).toUpperCase());
+        gamer.addPresents(1);
+        gamer.addHappiness(getPresentValue(presentType));
+        players.forEach(ArenaManager::createBoard);
     }
 
     public boolean checkFound(Location location) {
-        System.out.println(found.contains(location));
         return found.contains(location);
     }
 
@@ -282,6 +302,26 @@ public class Arena {
     public void resetPresentValues() {
         plugin.getArenaData().set(path + ".presentValues", null);
         plugin.saveArenaData();
+    }
+
+    public int getPresentsLeft() {
+        AtomicInteger left = new AtomicInteger();
+        Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents")).getKeys(false)
+                .forEach(type -> left.addAndGet(Utils.getConfigLocationList(plugin, path + ".presents." + type)
+                        .size()));
+        return left.addAndGet(-found.size());
+    }
+
+    public int getHappinessLeft() {
+        AtomicInteger left = new AtomicInteger();
+        Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents")).getKeys(false)
+                .forEach(type -> {
+                    int multiplier = getPresentValue(PresentType.valueOf(type.toUpperCase()));
+                    left.addAndGet(multiplier *
+                            Utils.getConfigLocationList(plugin, path + ".presents." + type).stream()
+                                    .filter(loc -> !checkFound(loc)).toList().size());
+                });
+        return left.get();
     }
 
     /**

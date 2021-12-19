@@ -1,7 +1,6 @@
 package me.theguyhere.grinchsimulator;
 
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
-import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
 import me.theguyhere.grinchsimulator.listeners.*;
 import me.theguyhere.grinchsimulator.packets.MetadataHelper;
 import me.theguyhere.grinchsimulator.packets.PacketReader;
@@ -15,7 +14,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
-import java.util.UUID;
 
 public class Main extends JavaPlugin {
     // Yaml file managers
@@ -40,7 +38,7 @@ public class Main extends JavaPlugin {
     int configVersion = 1;
     int arenaDataVersion = 1;
     int playerDataVersion = 1;
-    int languageFileVersion = 1;
+    int languageFileVersion = 2;
 
     @Override
     public void onEnable() {

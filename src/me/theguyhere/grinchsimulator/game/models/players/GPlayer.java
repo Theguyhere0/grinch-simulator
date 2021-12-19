@@ -11,15 +11,15 @@ import java.util.UUID;
 public class GPlayer {
     /** UUID of corresponding {@link Player}.*/
     private final UUID player;
-    /** Gem balance.*/
-    private int gems;
-    /** The number of times this player violated arena boundaries.*/
-    private int infractions;
+    /** Presents found.*/
+    private int presents;
+    /** Happiness stolen.*/
+    private int happiness;
 
     public GPlayer(Player player) {
         this.player = player.getUniqueId();
-        gems = 0;
-        infractions = 0;
+        presents = 0;
+        happiness = 0;
     }
 
     public UUID getID() {
@@ -30,19 +30,19 @@ public class GPlayer {
         return Bukkit.getPlayer(player);
     }
 
-    public int getGems() {
-        return gems;
+    public int getPresents() {
+        return presents;
     }
 
-    public void addGems(int change) {
-        gems += change;
+    public void addPresents(int change) {
+        presents += change;
     }
 
-    public int incrementInfractions() {
-        return ++infractions;
+    public int getHappiness() {
+        return happiness;
     }
-
-    public void resetInfractions() {
-        infractions = 0;
+    
+    public void addHappiness(int change) {
+        happiness += change;
     }
 }

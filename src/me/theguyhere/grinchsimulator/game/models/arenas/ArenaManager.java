@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -82,16 +84,37 @@ public class ArenaManager {
 		assert manager != null;
 
 		Scoreboard board = manager.getNewScoreboard();
-		Arena arena = Arrays.stream(arenas).filter(Objects::nonNull).filter(a -> a.hasPlayer(player))
-				.collect(Collectors.toList()).get(0);
+		Arena arena = Arrays.stream(arenas).filter(Objects::nonNull).filter(a -> a.hasPlayer(player)).toList().get(0);
+		List<GPlayer> presentLead = arena.getPlayers().stream()
+				.sorted(Comparator.comparingInt(GPlayer::getPresents).reversed()).toList();
+		List<GPlayer> happyLead = arena.getPlayers().stream()
+				.sorted(Comparator.comparingInt(GPlayer::getHappiness).reversed()).toList();
 
 		// Create score board
 		Objective obj = board.registerNewObjective("GrinchSimulator", "dummy",
 				Utils.format("&6&l   " + arena.getName() + "  "));
 		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-		Score score1 = obj.getScore(Utils.format("&aPresents Stolen: " + player.getGems()));
+		Score score9 = obj.getScore(Utils.format("&cPresents Left: " + arena.getPresentsLeft()));
+		score9.setScore(9);
+		Score score8 = obj.getScore(Utils.format("&4Happiness Left: " + arena.getHappinessLeft()));
+		score8.setScore(8);
+		Score score7 = obj.getScore(" ");
+		score7.setScore(7);
+		Score score6 = obj.getScore(Utils.format("&a&lPresents Poached: " + player.getPresents()));
+		score6.setScore(6);
+		Score score5 = obj.getScore(Utils.format("&aPresents Rank: " + (presentLead.indexOf(player) + 1)));
+		score5.setScore(5);
+		Score score4 = obj.getScore(Utils.format("&2&lHappiness Harvested: " + player.getHappiness()));
+		score4.setScore(4);
+		Score score3 = obj.getScore(Utils.format("&2Happiness Rank: " + (happyLead.indexOf(player) + 1)));
+		score3.setScore(3);
+		Score score2 = obj.getScore("");
+		score2.setScore(2);
+		Score score1 = obj.getScore(Utils.format(String.format("&eGifted Grinch: %s(&a%d&e)",
+				presentLead.get(0).getPlayer().getName(), presentLead.get(0).getPresents())));
 		score1.setScore(1);
-		Score score = obj.getScore(Utils.format("&dPlayers: " + arena.getPlayers().size()));
+		Score score = obj.getScore(Utils.format(String.format("&6Happiest Grinch: %s(&2%d&6)",
+				happyLead.get(0).getPlayer().getName(), happyLead.get(0).getHappiness())));
 		score.setScore(0);
 
 		player.getPlayer().setScoreboard(board);

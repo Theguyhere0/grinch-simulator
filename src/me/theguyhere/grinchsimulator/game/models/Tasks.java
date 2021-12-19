@@ -10,17 +10,8 @@ import me.theguyhere.grinchsimulator.game.models.arenas.ArenaStatus;
 import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
 import me.theguyhere.grinchsimulator.tools.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.boss.BarColor;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.*;
-import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -174,6 +165,9 @@ public class Tasks {
 				arenaInstance.getPlayers().forEach(player ->
 						player.getPlayer().stopSound(arenaInstance.getWaitingSound()));
 
+			// Start present particles
+			arenaInstance.startPresentParticles();
+
 //			arenaInstance.getActives().forEach(player -> {
 //				// Give all players starting items
 //				giveItems(player);
@@ -209,6 +203,9 @@ public class Tasks {
 			// Refresh portal
 			arenaInstance.refreshPortal();
 
+			// Reset presents
+			arenaInstance.resetPresents();
+
 			// Debug message to console
 			Utils.debugInfo("Arena " + arena + " is resetting.", 2);
 		}
@@ -240,7 +237,7 @@ public class Tasks {
 				arenaInstance.startTimeLimitBar();
 				arenaInstance.getPlayers().forEach(gPlayer ->
 						arenaInstance.addPlayerToTimeLimitBar(gPlayer.getPlayer()));
-				time = 1d / Utils.minutesToSeconds(arenaInstance.getWaveTimeLimit());
+				time = 1d / Utils.minutesToSeconds(arenaInstance.getTimeLimit());
 				messageSent = false;
 
 				// Debug message to console

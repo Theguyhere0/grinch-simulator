@@ -1,8 +1,8 @@
 package me.theguyhere.grinchsimulator.listeners;
 
+import me.theguyhere.grinchsimulator.GUI.Inventories;
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.events.*;
-import me.theguyhere.grinchsimulator.game.models.GameItems;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
@@ -21,7 +21,6 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.DisplaySlot;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ArenaListener implements Listener {
     private final Main plugin;
@@ -118,8 +117,8 @@ public class ArenaListener implements Listener {
                     Utils.debugError(err.getMessage(), 0);
                 }
 
-            // Give player choice options
-            player.getInventory().setItem(6, GameItems.leave());
+            // Give player pre game hotbar
+            Inventories.setPreGameHotbar(player);
 
             // Debug message to console
             Utils.debugInfo(player.getName() + "joined Arena " + arena.getArena(), 2);
@@ -217,7 +216,7 @@ public class ArenaListener implements Listener {
         Tasks task = arena.getTask();
 
         // Start wave count down
-        if (arena.getWaveTimeLimit() != -1)
+        if (arena.getTimeLimit() != -1)
             task.getTasks().put(task.updateBar,
                 Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, task.updateBar, 0, Utils.secondsToTicks(1)));
 
@@ -234,7 +233,7 @@ public class ArenaListener implements Listener {
         // Attempt to get arena and player
         try {
             arena = Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull).filter(a -> a.hasPlayer(player))
-                    .collect(Collectors.toList()).get(0);
+                    .toList().get(0);
             gamer = arena.getPlayer(player);
         } catch (Exception err) {
             e.setCancelled(true);
@@ -396,6 +395,7 @@ public class ArenaListener implements Listener {
             Bukkit.getScheduler().cancelTask(tasks.get(task.updateBar));
             tasks.remove(task.updateBar);
             arena.removeTimeLimitBar();
+            arena.cancelPresentParticles();
         }
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
                 Bukkit.getPluginManager().callEvent(new ArenaResetEvent(arena)), Utils.secondsToTicks(10));

@@ -260,8 +260,7 @@ public class Commands implements CommandExecutor {
                     // Attempt to get arena
                     try {
                         arena = Arrays.stream(ArenaManager.getArenas()).filter(Objects::nonNull)
-                                .filter(arena1 -> arena1.hasPlayer(player))
-                                .collect(Collectors.toList()).get(0);
+                                .filter(arena1 -> arena1.hasPlayer(player)).toList().get(0);
                     } catch (Exception e) {
                         player.sendMessage(Utils.notify(language.getString("forceStartError1")));
                         return true;
@@ -488,10 +487,44 @@ public class Commands implements CommandExecutor {
                     else Utils.debugError("plugin.yml must be updated manually.", 0);
 
                 // Check if arenaData.yml is outdated
-                if (plugin.getConfig().getInt("arenaData") < plugin.arenaDataVersion) {
-                    if (player != null)
-                        player.sendMessage(Utils.notify("&carenaData.yml must be updated manually."));
-                    else Utils.debugError("arenaData.yml must be updated manually.", 0);
+                if (plugin.getConfig().getInt("arenaData") < plugin.arenaDataVersion &&
+                        plugin.getArenaData().getConfigurationSection("") != null) {
+                    if (plugin.getConfig().getInt("arenaData") < 2) {
+                        // Flip flag
+                        fixed = true;
+
+                        // Fix
+                        try {
+                            Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(""))
+                                    .getKeys(false).stream().filter(a -> a.length() < 4).forEach(a -> {
+                                        plugin.getArenaData().set(a + ".timeLimit",
+                                                plugin.getArenaData().getInt(a + ".waveTimeLimit"));
+                                        plugin.getArenaData().set(a + ".waveTimeLimit", null);
+                                    });
+                            plugin.getConfig().set("arenaData", 2);
+                            plugin.saveArenaData();
+                            plugin.saveConfig();
+                        } catch (Exception e) {
+                            fixed = false;
+
+                            // Notify
+                            if (player != null)
+                                player.sendMessage(Utils.notify("&carenaData.yml must be updated manually."));
+                            else Utils.debugError("arenaData.yml must be updated manually.", 0);
+                        }
+
+                        // Notify
+                        if (player != null)
+                            player.sendMessage(Utils.notify("&aarenaData.yml has been automatically updated. " +
+                                    "Please restart the plugin."));
+                        Utils.debugInfo("arenaData.yml has been automatically updated. Please restart the plugin.",
+                                0);
+
+                    } else {
+                        if (player != null)
+                            player.sendMessage(Utils.notify("&carenaData.yml must be updated manually."));
+                        else Utils.debugError("arenaData.yml must be updated manually.", 0);
+                    }
                 }
 
                 // Check if playerData.yml is outdated

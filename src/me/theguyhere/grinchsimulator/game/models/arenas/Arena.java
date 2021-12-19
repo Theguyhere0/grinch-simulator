@@ -1,16 +1,15 @@
 package me.theguyhere.grinchsimulator.game.models.arenas;
 
+import me.theguyhere.grinchsimulator.GUI.Inventories;
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.exceptions.InvalidNameException;
 import me.theguyhere.grinchsimulator.exceptions.PlayerNotFoundException;
 import me.theguyhere.grinchsimulator.game.displays.Portal;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
+import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
 import me.theguyhere.grinchsimulator.tools.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -23,7 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A class managing data about a Villager Defense arena.
@@ -51,6 +50,12 @@ public class Arena {
     private Portal portal;
 //    /** Arena scoreboard object for the arena.*/
 //    private ArenaBoard arenaBoard;
+    /** A list of players that are editing the map.*/
+    private final List<Player> editors = new ArrayList<>();
+    /** A list of states of hidden presents.*/
+    private final List<Location> found = new ArrayList<>();
+    /** ID of task managing present particles.*/
+    private int presentParticlesID = 0;
 
     public Arena(Main plugin, int arena, Tasks task) {
         this.plugin = plugin;
@@ -96,8 +101,8 @@ public class Arena {
             setMinPlayers(1);
         
         // Set default wave time limit to -1 if it doesn't exist
-        if (getWaveTimeLimit() == 0)
-            setWaveTimeLimit(-1);
+        if (getTimeLimit() == 0)
+            setTimeLimit(-1);
 
         // Set default to closed if arena closed doesn't exist
         if (!config.contains(path + ".closed"))
@@ -108,7 +113,6 @@ public class Arena {
             setWinSound(true);
             setLoseSound(true);
             setWaveStartSound(true);
-            setWaveFinishSound(true);
             setWaitingSound(14);
         }
 
@@ -142,6 +146,184 @@ public class Arena {
         return config.getInt(path + ".min");
     }
 
+    public void startPresentParticles() {
+        if (presentParticlesID != 0)
+            return;
+
+        presentParticlesID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            try {
+                found.forEach(location -> Objects.requireNonNull(location.getWorld())
+                        .spawnParticle(Particle.BARRIER, location.clone().add(.5, .25, .5), 1));
+            } catch (Exception e) {
+                Utils.debugError(String.format("Present particle generation error for arena %d.", arena),
+                        2);
+            }
+        }, 0 , 80);
+    }
+
+    public void cancelPresentParticles() {
+        if (presentParticlesID != 0)
+            Bukkit.getScheduler().cancelTask(presentParticlesID);
+        presentParticlesID = 0;
+    }
+
+    public void addPresent(PresentType type, Location location) {
+        List<Location> newList = getPresents(type);
+        if (newList == null)
+            newList = new ArrayList<>();
+        newList.add(location);
+        plugin.getArenaData().set(path + ".presents." + type.label, newList);
+        plugin.saveArenaData();
+    }
+
+    public boolean checkPresent(Location location) {
+        try {
+            if (Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents"))
+                    .getKeys(false).stream().anyMatch(type -> Utils.getConfigLocationList(plugin,
+                            path + ".presents." + type).stream().anyMatch(loc -> {
+                        loc.setYaw(0);
+                        return loc.equals(location);
+                    })))
+                return true;
+        } catch (Exception ignored) {
+        }
+        return false;
+    }
+
+    public void findPresent(Player player, Location location) {
+        GPlayer gamer;
+        // Make sure player is a gamer
+        try {
+            gamer = getPlayer(player);
+        } catch (PlayerNotFoundException e) {
+            return;
+        }
+
+        // Mark present as found
+        found.add(location.clone());
+        Objects.requireNonNull(location.getWorld()).spawnParticle(Particle.BARRIER,
+                location.clone().add(.5, .25, .5), 1);
+
+        // Update player stats
+        PresentType presentType = PresentType.valueOf(Objects.requireNonNull(plugin.getArenaData()
+                        .getConfigurationSection(path + ".presents"))
+                .getKeys(false).stream().filter(type -> Utils.getConfigLocationList(plugin,
+                        path + ".presents." + type).stream().anyMatch(loc -> {
+                            loc.setYaw(0);
+                            return loc.equals(location);
+                        })).toList().get(0).toUpperCase());
+        gamer.addPresents(1);
+        gamer.addHappiness(getPresentValue(presentType));
+        players.forEach(ArenaManager::createBoard);
+    }
+
+    public boolean checkFound(Location location) {
+        return found.contains(location);
+    }
+
+    public void resetPresents() {
+        found.clear();
+    }
+
+    private void safeRemovePresent(Location location, PresentType type) {
+        // Remove from server
+        location.getBlock().setType(Material.AIR);
+
+        // Remove from files
+        List<Location> newList = getPresents(type);
+        newList.remove(location);
+        plugin.getArenaData().set(path + ".presents." + type.label, newList);
+        plugin.saveArenaData();
+    }
+
+    public boolean removePresent(Location location) {
+        try {
+            if (checkPresent(location)) {
+                String presentType = Objects.requireNonNull(plugin.getArenaData()
+                                .getConfigurationSection(path + ".presents"))
+                        .getKeys(false).stream().filter(type -> Utils.getConfigLocationList(plugin,
+                                path + ".presents." + type).stream().anyMatch(loc -> {
+                            loc.setYaw(0);
+                            return loc.equals(location);
+                        })).toList().get(0).toUpperCase();
+                safeRemovePresent(location, PresentType.valueOf(presentType));
+                return true;
+            }
+        } catch (Exception ignored) {
+        }
+        return false;
+    }
+
+    public void removePresents(PresentType type) {
+        try {
+            Objects.requireNonNull(plugin.getArenaData().getList(path + ".presents." + type.label))
+                    .forEach(location -> safeRemovePresent((Location) location, type));
+        } catch (Exception ignored) { }
+    }
+
+    public void removeAllPresents() {
+        removePresents(PresentType.WOOD);
+        removePresents(PresentType.STONE);
+        removePresents(PresentType.IRON);
+        removePresents(PresentType.COPPER);
+        removePresents(PresentType.GOLD);
+        removePresents(PresentType.DIAMOND);
+        removePresents(PresentType.EMERALD);
+        removePresents(PresentType.NETHERITE);
+        removePresents(PresentType.BLACK);
+        removePresents(PresentType.BROWN);
+        removePresents(PresentType.RED);
+        removePresents(PresentType.ORANGE);
+        removePresents(PresentType.YELLOW);
+        removePresents(PresentType.GREEN);
+        removePresents(PresentType.CYAN);
+        removePresents(PresentType.BLUE);
+        removePresents(PresentType.PURPLE);
+        removePresents(PresentType.PINK);
+        removePresents(PresentType.WHITE);
+    }
+
+    public List<Location> getPresents(PresentType type) {
+        return Utils.getConfigLocationList(plugin, path + ".presents." + type.label);
+    }
+
+    public int getPresentValue(PresentType type) {
+        String newPath = path + ".presentValues." + type.label;
+        if (plugin.getArenaData().contains(newPath))
+            return plugin.getArenaData().getInt(newPath);
+        else return 1;
+    }
+
+    public void setPresentValue(PresentType type, int value) {
+        plugin.getArenaData().set(path + ".presentValues." + type.label, value);
+        plugin.saveArenaData();
+    }
+
+    public void resetPresentValues() {
+        plugin.getArenaData().set(path + ".presentValues", null);
+        plugin.saveArenaData();
+    }
+
+    public int getPresentsLeft() {
+        AtomicInteger left = new AtomicInteger();
+        Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents")).getKeys(false)
+                .forEach(type -> left.addAndGet(Utils.getConfigLocationList(plugin, path + ".presents." + type)
+                        .size()));
+        return left.addAndGet(-found.size());
+    }
+
+    public int getHappinessLeft() {
+        AtomicInteger left = new AtomicInteger();
+        Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents")).getKeys(false)
+                .forEach(type -> {
+                    int multiplier = getPresentValue(PresentType.valueOf(type.toUpperCase()));
+                    left.addAndGet(multiplier *
+                            Utils.getConfigLocationList(plugin, path + ".presents." + type).stream()
+                                    .filter(loc -> !checkFound(loc)).toList().size());
+                });
+        return left.get();
+    }
+
     /**
      * Writes the new minimum player count of the arena into the arena file.
      * @param minPlayers New minimum player count.
@@ -155,16 +337,16 @@ public class Arena {
      * Retrieves the nominal time limit per wave of the arena from the arena file.
      * @return Nominal time limit per wave.
      */
-    public int getWaveTimeLimit() {
-        return config.getInt(path + ".waveTimeLimit");
+    public int getTimeLimit() {
+        return config.getInt(path + ".timeLimit");
     }
 
     /**
      * Writes the new nominal time limit per wave of the arena into the arena file.
      * @param timeLimit New nominal time limit per wave.
      */
-    public void setWaveTimeLimit(int timeLimit) {
-        config.set(path + ".waveTimeLimit", timeLimit);
+    public void setTimeLimit(int timeLimit) {
+        config.set(path + ".timeLimit", timeLimit);
         plugin.saveArenaData();
     }
     
@@ -511,15 +693,6 @@ public class Arena {
         plugin.saveArenaData();
     }
 
-    public boolean hasWaveFinishSound() {
-        return config.getBoolean(path + ".sounds.end");
-    }
-
-    public void setWaveFinishSound(boolean bool) {
-        config.set(path + ".sounds.end", bool);
-        plugin.saveArenaData();
-    }
-    
     public boolean isClosed() {
         return config.getBoolean(path + ".closed");
     }
@@ -617,8 +790,7 @@ public class Arena {
     public GPlayer getPlayer(Player player) throws PlayerNotFoundException {
         try {
             return players.stream().filter(Objects::nonNull).filter(p -> p.getID().equals(player.getUniqueId()))
-                    .collect(Collectors.toList())
-                    .get(0);
+                    .toList().get(0);
         } catch (Exception e) {
             throw new PlayerNotFoundException("Player not in this arena.");
         }
@@ -652,7 +824,7 @@ public class Arena {
         try {
             timeLimitBar = Bukkit.createBossBar(
                     Utils.format(Objects.requireNonNull(plugin.getLanguageData().getString("timeBar"))),
-                    BarColor.YELLOW, BarStyle.SOLID);
+                    BarColor.GREEN, BarStyle.SOLID);
         } catch (Exception e) {
             Utils.debugError("The active language file is missing text for the key 'timeBar'.", 1);
         }
@@ -702,12 +874,44 @@ public class Arena {
             timeLimitBar.removePlayer(player);
     }
 
+    public void addEditor(Player player) {
+        // Save player inventory before going into editor mode, then clear inventory
+        for (int i = 0; i < player.getInventory().getContents().length; i++)
+            plugin.getPlayerData().set(player.getName() + ".inventory." + i, player.getInventory().getContents()[i]);
+        plugin.savePlayerData();
+        player.getInventory().clear();
+
+        editors.add(player);
+
+        // Set initial editor hotbar
+        Inventories.setEditorHotbar(player, 0);
+    }
+
+    public void removeEditor(Player player) {
+        // Return player inventory before going into editor mode
+        player.getInventory().clear();
+        if (plugin.getPlayerData().contains(player.getName() + ".inventory"))
+            Objects.requireNonNull(plugin.getPlayerData()
+                            .getConfigurationSection(player.getName() + ".inventory"))
+                    .getKeys(false)
+                    .forEach(num -> player.getInventory().setItem(Integer.parseInt(num),
+                            (ItemStack) plugin.getPlayerData().get(player.getName() + ".inventory." + num)));
+        plugin.getPlayerData().set(player.getName() + ".inventory", null);
+        plugin.savePlayerData();
+
+        editors.remove(player);
+    }
+
+    public boolean hasEditor(Player player) {
+        return editors.contains(player);
+    }
+
     /**
      * Checks and closes an arena if the arena does not meet opening requirements.
      */
     public void checkClose() {
         if (!plugin.getArenaData().contains("lobby") ||
-//                getPortalLocation() == null ||
+                getPortalLocation() == null ||
                 getPlayerSpawn() == null) {
             setClosed(true);
             Utils.debugInfo(String.format("Arena %d did not meet opening requirements and was closed.", arena),
@@ -722,11 +926,10 @@ public class Arena {
     public void copy(Arena arenaToCopy) {
         setMaxPlayers(arenaToCopy.getMaxPlayers());
         setMinPlayers(arenaToCopy.getMinPlayers());
-        setWaveTimeLimit(arenaToCopy.getWaveTimeLimit());
+        setTimeLimit(arenaToCopy.getTimeLimit());
         setWinSound(arenaToCopy.hasWinSound());
         setLoseSound(arenaToCopy.hasLoseSound());
         setWaveStartSound(arenaToCopy.hasWaveStartSound());
-        setWaveFinishSound(arenaToCopy.hasWaveFinishSound());
         setWaitingSound(arenaToCopy.getWaitingSoundNum());
         if (config.contains("a" + arenaToCopy.getArena() + ".customShop"))
             try {
@@ -751,7 +954,7 @@ public class Arena {
      */
     public void remove() {
 //        removeArenaBoard();
-//        removePortal();
+        removePortal();
         config.set(path, null);
         plugin.saveArenaData();
         Utils.debugInfo(String.format("Removing arena %d.", arena), 1);

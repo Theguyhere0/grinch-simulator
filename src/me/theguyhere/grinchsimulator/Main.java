@@ -36,7 +36,7 @@ public class Main extends JavaPlugin {
     private static int debugLevel = 0;
     private boolean outdated = false;
     int configVersion = 1;
-    int arenaDataVersion = 1;
+    int arenaDataVersion = 2;
     int playerDataVersion = 1;
     int languageFileVersion = 2;
 

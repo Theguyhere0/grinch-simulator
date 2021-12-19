@@ -909,11 +909,11 @@ public class Inventories {
 		Inventory inv;
 
 		// Create inventory
-		if (ArenaManager.getArena(arena).getWaveTimeLimit() < 0)
+		if (ArenaManager.getArena(arena).getTimeLimit() < 0)
 			inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
 					Utils.format("&2&lWave Time Limit: Unlimited"));
 		else inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-				Utils.format("&2&lWave Time Limit: " + ArenaManager.getArena(arena).getWaveTimeLimit()));
+				Utils.format("&2&lWave Time Limit: " + ArenaManager.getArena(arena).getTimeLimit()));
 
 		// Option to decrease
 		for (int i = 0; i < 3; i++)
@@ -1097,9 +1097,9 @@ public class Inventories {
 
 		// Wave time limit
 		String limit;
-		if (arena.getWaveTimeLimit() < 0)
+		if (arena.getTimeLimit() < 0)
 			limit = "Unlimited";
-		else limit = arena.getWaveTimeLimit() + " minute(s)";
+		else limit = arena.getTimeLimit() + " minute(s)";
 		inv.setItem(4, Utils.createItem(Material.CLOCK,
 				Utils.format("&9&lWave time limit: &9" + limit),
 				Utils.format("&7The time limit for each wave before"), Utils.format("&7the game ends")));

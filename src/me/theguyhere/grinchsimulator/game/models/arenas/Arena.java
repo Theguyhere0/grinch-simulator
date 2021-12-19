@@ -101,8 +101,8 @@ public class Arena {
             setMinPlayers(1);
         
         // Set default wave time limit to -1 if it doesn't exist
-        if (getWaveTimeLimit() == 0)
-            setWaveTimeLimit(-1);
+        if (getTimeLimit() == 0)
+            setTimeLimit(-1);
 
         // Set default to closed if arena closed doesn't exist
         if (!config.contains(path + ".closed"))
@@ -337,16 +337,16 @@ public class Arena {
      * Retrieves the nominal time limit per wave of the arena from the arena file.
      * @return Nominal time limit per wave.
      */
-    public int getWaveTimeLimit() {
-        return config.getInt(path + ".waveTimeLimit");
+    public int getTimeLimit() {
+        return config.getInt(path + ".timeLimit");
     }
 
     /**
      * Writes the new nominal time limit per wave of the arena into the arena file.
      * @param timeLimit New nominal time limit per wave.
      */
-    public void setWaveTimeLimit(int timeLimit) {
-        config.set(path + ".waveTimeLimit", timeLimit);
+    public void setTimeLimit(int timeLimit) {
+        config.set(path + ".timeLimit", timeLimit);
         plugin.saveArenaData();
     }
     
@@ -824,7 +824,7 @@ public class Arena {
         try {
             timeLimitBar = Bukkit.createBossBar(
                     Utils.format(Objects.requireNonNull(plugin.getLanguageData().getString("timeBar"))),
-                    BarColor.YELLOW, BarStyle.SOLID);
+                    BarColor.GREEN, BarStyle.SOLID);
         } catch (Exception e) {
             Utils.debugError("The active language file is missing text for the key 'timeBar'.", 1);
         }
@@ -926,7 +926,7 @@ public class Arena {
     public void copy(Arena arenaToCopy) {
         setMaxPlayers(arenaToCopy.getMaxPlayers());
         setMinPlayers(arenaToCopy.getMinPlayers());
-        setWaveTimeLimit(arenaToCopy.getWaveTimeLimit());
+        setTimeLimit(arenaToCopy.getTimeLimit());
         setWinSound(arenaToCopy.hasWinSound());
         setLoseSound(arenaToCopy.hasLoseSound());
         setWaveStartSound(arenaToCopy.hasWaveStartSound());

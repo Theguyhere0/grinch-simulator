@@ -1,7 +1,6 @@
 package me.theguyhere.grinchsimulator.listeners;
 
 import me.theguyhere.grinchsimulator.GUI.Inventories;
-import me.theguyhere.grinchsimulator.GUI.InventoryItems;
 import me.theguyhere.grinchsimulator.GUI.InventoryMeta;
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.events.LeaveArenaEvent;
@@ -11,7 +10,6 @@ import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
 import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
 import me.theguyhere.grinchsimulator.tools.Utils;
-import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,16 +18,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class InventoryListener implements Listener {
 	private final Main plugin;
@@ -1410,7 +1402,7 @@ public class InventoryListener implements Listener {
 			InventoryMeta meta = (InventoryMeta) e.getInventory().getHolder();
 			assert meta != null;
 			Arena arenaInstance = ArenaManager.getArena(meta.getInteger1());
-			int current = arenaInstance.getWaveTimeLimit();
+			int current = arenaInstance.getTimeLimit();
 
 			// Decrease wave time limit
 			if (buttonName.contains("Decrease")) {
@@ -1422,13 +1414,13 @@ public class InventoryListener implements Listener {
 
 				// Check if wave time limit is unlimited
 				if (current == -1)
-					arenaInstance.setWaveTimeLimit(1);
+					arenaInstance.setTimeLimit(1);
 
 				// Check if wave time limit is greater than 1
 				else if (current <= 1) {
 					player.sendMessage(Utils.notify("&cWave time limit cannot be less than 1!"));
 					return;
-				} else arenaInstance.setWaveTimeLimit(--current);
+				} else arenaInstance.setTimeLimit(--current);
 
 				player.openInventory(Inventories.createWaveTimeLimitInventory(meta.getInteger1()));
 			}
@@ -1441,7 +1433,7 @@ public class InventoryListener implements Listener {
 					return;
 				}
 
-				arenaInstance.setWaveTimeLimit(-1);
+				arenaInstance.setTimeLimit(-1);
 				player.openInventory(Inventories.createWaveTimeLimitInventory(meta.getInteger1()));
 			}
 
@@ -1453,7 +1445,7 @@ public class InventoryListener implements Listener {
 					return;
 				}
 
-				arenaInstance.setWaveTimeLimit(1);
+				arenaInstance.setTimeLimit(1);
 				player.openInventory(Inventories.createWaveTimeLimitInventory(meta.getInteger1()));
 			}
 
@@ -1467,8 +1459,8 @@ public class InventoryListener implements Listener {
 
 				// Check if wave time limit is unlimited
 				if (current == -1)
-					arenaInstance.setWaveTimeLimit(1);
-				else arenaInstance.setWaveTimeLimit(++current);
+					arenaInstance.setTimeLimit(1);
+				else arenaInstance.setTimeLimit(++current);
 
 				player.openInventory(Inventories.createWaveTimeLimitInventory(meta.getInteger1()));
 			}

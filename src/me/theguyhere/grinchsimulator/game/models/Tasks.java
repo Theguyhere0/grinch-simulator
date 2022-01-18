@@ -149,9 +149,8 @@ public class Tasks {
 		public void run() {
 			Arena arenaInstance = ArenaManager.getArena(arena);
 
-			// Set arena to active, set new game ID
+			// Set arena to active
 			arenaInstance.setStatus(ArenaStatus.ACTIVE);
-			arenaInstance.newGameID();
 
 			// Teleport players to arena if waiting room exists
 			if (arenaInstance.getWaitingRoom() != null) {

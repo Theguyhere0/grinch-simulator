@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class ArenaManager {
 	private final Main plugin;
@@ -249,15 +248,17 @@ public class ArenaManager {
 				.filter(Objects::nonNull).forEach(portal -> portal.displayForPlayer(player));
 	}
 
-//	/**
-//	 * Display all arena boards to a player.
-//	 * @param player - The player to display all arena boards to.
-//	 */
-//	public static void displayAllArenaBoards(Player player) {
-//		Arrays.stream(arenas).filter(Objects::nonNull).map(Arena::getArenaBoard)
-//				.filter(Objects::nonNull).forEach(arenaBoard -> arenaBoard.displayForPlayer(player));
-//	}
-//
+	/**
+	 * Display all arena boards to a player.
+	 * @param player - The player to display all arena boards to.
+	 */
+	public static void displayAllArenaBoards(Player player) {
+		Arrays.stream(arenas).filter(Objects::nonNull).map(Arena::getPresentLeaders)
+				.filter(Objects::nonNull).forEach(arenaBoard -> arenaBoard.displayForPlayer(player));
+		Arrays.stream(arenas).filter(Objects::nonNull).map(Arena::getHappyLeaders)
+				.filter(Objects::nonNull).forEach(arenaBoard -> arenaBoard.displayForPlayer(player));
+	}
+
 //	/**
 //	 * Display all info boards to a player.
 //	 * @param player - The player to display all info boards to.
@@ -280,7 +281,7 @@ public class ArenaManager {
 	 */
 	public static void displayEverything(Player player) {
 		displayAllPortals(player);
-//		displayAllArenaBoards(player);
+		displayAllArenaBoards(player);
 //		displayAllInfoBoards(player);
 //		displayAllLeaderboards(player);
 	}
@@ -292,13 +293,13 @@ public class ArenaManager {
 		Arrays.stream(arenas).filter(Objects::nonNull).forEach(Arena::refreshPortal);
 	}
 
-//	/**
-//	 * Refresh the arena board of every arena.
-//	 */
-//	public static void refreshArenaBoards() {
-//		Arrays.stream(arenas).filter(Objects::nonNull).forEach(Arena::refreshArenaBoard);
-//	}
-//
+	/**
+	 * Refresh the arena board of every arena.
+	 */
+	public static void refreshArenaBoards() {
+		Arrays.stream(arenas).filter(Objects::nonNull).forEach(Arena::refreshArenaBoard);
+	}
+
 //	/**
 //	 * Refresh every info board.
 //	 */
@@ -321,7 +322,7 @@ public class ArenaManager {
 	 */
 	public void refreshAll() {
 		refreshPortals();
-//		refreshArenaBoards();
+		refreshArenaBoards();
 //		refreshInfoBoards();
 //		refreshLeaderboards();
 	}

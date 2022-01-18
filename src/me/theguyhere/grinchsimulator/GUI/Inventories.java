@@ -475,19 +475,67 @@ public class Inventories {
 		// Option to remove the portal
 		inv.setItem(3, InventoryItems.remove("PORTAL"));
 
-//		// Option to create or relocate the leaderboard
-//		if (arenaInstance.getArenaBoard() == null)
-//			inv.setItem(4, InventoryItems.create("Leaderboard"));
-//		else inv.setItem(4, InventoryItems.relocate("Leaderboard"));
-//
-//		// Option to teleport to the leaderboard
-//		inv.setItem(5, InventoryItems.teleport("Leaderboard"));
-//
-//		// Option to center the leaderboard
-//		inv.setItem(6, InventoryItems.center("Leaderboard"));
-//
-//		// Option to remove the leaderboard
-//		inv.setItem(7, InventoryItems.remove("LEADERBOARD"));
+		// Option to edit the present leaderboard
+		inv.setItem(5, Utils.createItem(Material.CRIMSON_SIGN, Utils.format("&5&lPresent Leaderboard")));
+
+		// Option to edit the happiness leaderboard
+		inv.setItem(6, Utils.createItem(Material.WARPED_SIGN, Utils.format("&5&lHappiness Leaderboard")));
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Menu for editing the present leaderboard of an arena
+	public static Inventory createPresentLeaderInventory(int arena) {
+		Arena arenaInstance = ArenaManager.getArena(arena);
+
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&5&lPresent LBoard: " + arenaInstance.getName()));
+
+		// Option to create or relocate the leaderboard
+		if (arenaInstance.getPresentLeaders() == null)
+			inv.setItem(0, InventoryItems.create("Leaderboard"));
+		else inv.setItem(0, InventoryItems.relocate("Leaderboard"));
+
+		// Option to teleport to the leaderboard
+		inv.setItem(2, InventoryItems.teleport("Leaderboard"));
+
+		// Option to center the leaderboard
+		inv.setItem(4, InventoryItems.center("Leaderboard"));
+
+		// Option to remove the leaderboard
+		inv.setItem(6, InventoryItems.remove("LEADERBOARD"));
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Menu for editing the happiness leaderboard of an arena
+	public static Inventory createHappyLeaderInventory(int arena) {
+		Arena arenaInstance = ArenaManager.getArena(arena);
+
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&5&lHappiness LBoard: " + arenaInstance.getName()));
+
+		// Option to create or relocate the leaderboard
+		if (arenaInstance.getHappyLeaders() == null)
+			inv.setItem(0, InventoryItems.create("Leaderboard"));
+		else inv.setItem(0, InventoryItems.relocate("Leaderboard"));
+
+		// Option to teleport to the leaderboard
+		inv.setItem(2, InventoryItems.teleport("Leaderboard"));
+
+		// Option to center the leaderboard
+		inv.setItem(4, InventoryItems.center("Leaderboard"));
+
+		// Option to remove the leaderboard
+		inv.setItem(6, InventoryItems.remove("LEADERBOARD"));
 
 		// Option to exit
 		inv.setItem(8, InventoryItems.exit());
@@ -510,21 +558,36 @@ public class Inventories {
 		return inv;
 	}
 
-//	// Confirmation menu for removing the arena leaderboard
-//	public static Inventory createArenaBoardConfirmInventory(int arena) {
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
-//				Utils.format("&4&lRemove Leaderboard?"));
-//
-//		// "No" option
-//		inv.setItem(0, InventoryItems.no());
-//
-//		// "Yes" option
-//		inv.setItem(8, InventoryItems.yes());
-//
-//		return inv;
-//	}
-//
+	// Confirmation menu for removing the present leaderboard
+	public static Inventory createPresentLeadersConfirmInventory(int arena) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&4&lRemove Present LBoard?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
+
+	// Confirmation menu for removing the happiness leaderboard
+	public static Inventory createHappyLeadersConfirmInventory(int arena) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&4&lRemove Happiness LBoard?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
+
 	// Menu for editing the player settings of an arena
 	public static Inventory createPlayersInventory(int arena) {
 		Arena arenaInstance = ArenaManager.getArena(arena);

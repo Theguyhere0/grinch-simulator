@@ -206,7 +206,7 @@ public class ArenaListener implements Listener {
         }
 
         // Play wave start sound
-        if (arena.hasWaveStartSound()) {
+        if (arena.hasStartSound()) {
             for (GPlayer vdPlayer : arena.getPlayers()) {
                 vdPlayer.getPlayer().playSound(arena.getPlayerSpawn(),
                         Sound.ENTITY_ENDER_DRAGON_GROWL, 10, .25f);

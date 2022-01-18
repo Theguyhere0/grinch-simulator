@@ -8,6 +8,7 @@ import me.theguyhere.grinchsimulator.events.SignGUIEvent;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
+import me.theguyhere.grinchsimulator.game.models.arenas.ArenaRecordType;
 import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
 import me.theguyhere.grinchsimulator.tools.Utils;
 import org.bukkit.Bukkit;
@@ -908,7 +909,7 @@ public class InventoryListener implements Listener {
 			}
 		}
 
-//		 Portal and leaderboard menu for an arena
+		// Portal and leaderboard menu for an arena
 		else if (title.contains("Portal/LBoard:")) {
 			InventoryMeta meta = (InventoryMeta) e.getInventory().getHolder();
 			assert meta != null;
@@ -923,7 +924,7 @@ public class InventoryListener implements Listener {
 				} else player.sendMessage(Utils.notify("&cArena must be closed to modify this!"));
 
 			// Relocate portal
-			if (buttonName.contains("Relocate Portal"))
+			else if (buttonName.contains("Relocate Portal"))
 				if (arenaInstance.isClosed()) {
 					arenaInstance.setPortal(player.getLocation());
 					player.sendMessage(Utils.notify("&aPortal relocated!"));
@@ -960,49 +961,119 @@ public class InventoryListener implements Listener {
 					else player.sendMessage(Utils.notify("&cArena must be closed to modify this!"));
 				else player.sendMessage(Utils.notify("&cNo portal to remove!"));
 
-//			// Create leaderboard
-//			if (buttonName.contains("Create Leaderboard")) {
-//				arenaInstance.setArenaBoard(player.getLocation());
-//				player.sendMessage(Utils.notify("&aLeaderboard set!"));
-//				player.openInventory(Inventories.createPortalInventory(meta.getInteger1()));
-//			}
-//
-//			// Relocate leaderboard
-//			if (buttonName.contains("Relocate Leaderboard")) {
-//				arenaInstance.setArenaBoard(player.getLocation());
-//				player.sendMessage(Utils.notify("&aLeaderboard relocated!"));
-//			}
-//
-//			// Teleport player to leaderboard
-//			else if (buttonName.contains("Teleport to Leaderboard")) {
-//				Location location = arenaInstance.getArenaBoardLocation();
-//				if (location == null) {
-//					player.sendMessage(Utils.notify("&cNo leaderboard to teleport to!"));
-//					return;
-//				}
-//				player.teleport(location);
-//				player.closeInventory();
-//			}
-//
-//			// Center leaderboard
-//			else if (buttonName.contains("Center Leaderboard")) {
-//				if (arenaInstance.getArenaBoard() == null) {
-//					player.sendMessage(Utils.notify("&cNo leaderboard to center!"));
-//					return;
-//				}
-//				arenaInstance.centerArenaBoard();
-//				player.sendMessage(Utils.notify("&aLeaderboard centered!"));
-//			}
-//
-//			// Remove leaderboard
-//			else if (buttonName.contains("REMOVE LEADERBOARD"))
-//				if (arenaInstance.getArenaBoardLocation() != null)
-//					player.openInventory(Inventories.createArenaBoardConfirmInventory(meta.getInteger1()));
-//				else player.sendMessage(Utils.notify("&cNo leaderboard to remove!"));
+			// Edit present leaderboard
+			else if (buttonName.contains("Present Leaderboard"))
+				player.openInventory(Inventories.createPresentLeaderInventory(meta.getInteger1()));
+
+			// Edit happiness leaderboard
+			else if (buttonName.contains("Happiness Leaderboard"))
+				player.openInventory(Inventories.createHappyLeaderInventory(meta.getInteger1()));
 
 			// Exit menu
 			else if (buttonName.contains("EXIT"))
 				player.openInventory(Inventories.createArenaInventory(meta.getInteger1()));
+		}
+
+		// Present leaderboard menu for an arena
+		else if (title.contains("Present LBoard:")) {
+			InventoryMeta meta = (InventoryMeta) e.getInventory().getHolder();
+			assert meta != null;
+			Arena arenaInstance = ArenaManager.getArena(meta.getInteger1());
+
+			// Create portal
+			if (buttonName.contains("Create Leaderboard")) {
+					arenaInstance.setArenaBoard(player.getLocation(), ArenaRecordType.PRESENTS);
+					player.sendMessage(Utils.notify("&aLeaderboard set!"));
+					player.openInventory(Inventories.createPresentLeaderInventory(meta.getInteger1()));
+			}
+
+			// Relocate portal
+			else if (buttonName.contains("Relocate Leaderboard")) {
+					arenaInstance.setArenaBoard(player.getLocation(), ArenaRecordType.PRESENTS);
+					player.sendMessage(Utils.notify("&aLeaderboard relocated!"));
+			}
+
+			// Teleport player to portal
+			else if (buttonName.contains("Teleport to Leaderboard")) {
+				Location location = arenaInstance.getPresentLeadersLocation();
+				if (location == null) {
+					player.sendMessage(Utils.notify("&cNo leaderboard to teleport to!"));
+					return;
+				}
+				player.teleport(location);
+				player.closeInventory();
+			}
+
+			// Center portal
+			else if (buttonName.contains("Center Leaderboard")) {
+				if (arenaInstance.getPresentLeaders() == null) {
+					player.sendMessage(Utils.notify("&cNo leaderboard to center!"));
+					return;
+				}
+				arenaInstance.centerArenaBoard(ArenaRecordType.PRESENTS);
+				player.sendMessage(Utils.notify("&aLeaderboard centered!"));
+			}
+
+			// Remove portal
+			else if (buttonName.contains("REMOVE LEADERBOARD"))
+				if (arenaInstance.getPresentLeaders() != null)
+					player.openInventory(Inventories.createPresentLeadersConfirmInventory(meta.getInteger1()));
+				else player.sendMessage(Utils.notify("&cNo leaderboard to remove!"));
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createPortalInventory(meta.getInteger1()));
+		}
+
+		// Happiness leaderboard menu for an arena
+		else if (title.contains("Happiness LBoard:")) {
+			InventoryMeta meta = (InventoryMeta) e.getInventory().getHolder();
+			assert meta != null;
+			Arena arenaInstance = ArenaManager.getArena(meta.getInteger1());
+
+			// Create portal
+			if (buttonName.contains("Create Leaderboard")) {
+					arenaInstance.setArenaBoard(player.getLocation(), ArenaRecordType.HAPPINESS);
+					player.sendMessage(Utils.notify("&aLeaderboard set!"));
+					player.openInventory(Inventories.createHappyLeaderInventory(meta.getInteger1()));
+			}
+
+			// Relocate portal
+			else if (buttonName.contains("Relocate Leaderboard")) {
+					arenaInstance.setArenaBoard(player.getLocation(), ArenaRecordType.HAPPINESS);
+					player.sendMessage(Utils.notify("&aLeaderboard relocated!"));
+			}
+
+			// Teleport player to portal
+			else if (buttonName.contains("Teleport to Leaderboard")) {
+				Location location = arenaInstance.getHappyLeadersLocation();
+				if (location == null) {
+					player.sendMessage(Utils.notify("&cNo leaderboard to teleport to!"));
+					return;
+				}
+				player.teleport(location);
+				player.closeInventory();
+			}
+
+			// Center portal
+			else if (buttonName.contains("Center Leaderboard")) {
+				if (arenaInstance.getHappyLeaders() == null) {
+					player.sendMessage(Utils.notify("&cNo leaderboard to center!"));
+					return;
+				}
+				arenaInstance.centerArenaBoard(ArenaRecordType.HAPPINESS);
+				player.sendMessage(Utils.notify("&aLeaderboard centered!"));
+			}
+
+			// Remove portal
+			else if (buttonName.contains("REMOVE LEADERBOARD"))
+				if (arenaInstance.getHappyLeaders() != null)
+					player.openInventory(Inventories.createHappyLeadersConfirmInventory(meta.getInteger1()));
+				else player.sendMessage(Utils.notify("&cNo leaderboard to remove!"));
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createPortalInventory(meta.getInteger1()));
 		}
 
 		// Player settings menu for an arena

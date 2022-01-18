@@ -4,15 +4,14 @@ import me.theguyhere.grinchsimulator.GUI.Inventories;
 import me.theguyhere.grinchsimulator.GUI.InventoryItems;
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.events.LeaveArenaEvent;
-import me.theguyhere.grinchsimulator.exceptions.PlayerNotFoundException;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaStatus;
-import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
 import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
 import me.theguyhere.grinchsimulator.tools.Utils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -113,7 +112,6 @@ public class GameListener implements Listener {
 						r.nextDouble() / 2.5, r.nextDouble() / 2.5);
 				player.playSound(blockLocation, Sound.BLOCK_NOTE_BLOCK_BELL, 2F, (float) 1.82);
 			}
-
 
 			// Ignore
 			else return;

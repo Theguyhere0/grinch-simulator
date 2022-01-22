@@ -51,8 +51,7 @@ public class Inventories {
 				Utils.format("&7Manage minigame lobby")));
 
 		// Option to set info hologram
-		inv.setItem(46, Utils.createItem(Material.OAK_SIGN, Utils.format("&6&lInfo Boards"),
-				CONSTRUCTION));
+		inv.setItem(46, Utils.createItem(Material.OAK_SIGN, Utils.format("&6&lInfo Boards")));
 
 		// Option to set leaderboard hologram
 		inv.setItem(47, Utils.createItem(Material.GOLDEN_HELMET, Utils.format("&e&lLeaderboards"),
@@ -114,14 +113,14 @@ public class Inventories {
 		int index;
 
 		// Options to interact with all 8 possible info boards
-		for (int i = 0; i < 8; i++) {
+		for (int i = 1; i < 9; i++) {
 			// Check if the info board exists
 			if (!plugin.getArenaData().contains("infoBoard." + i))
 				index = 0;
 			else index = 1;
 
 			// Create and set item
-			inv.setItem(i, Utils.createItem(INFO_BOARD_MATS[index], Utils.format("&6&lInfo Board " + (i + 1))));
+			inv.setItem(i - 1, Utils.createItem(INFO_BOARD_MATS[index], Utils.format("&6&lInfo Board " + i)));
 		}
 
 		// Option to exit
@@ -130,47 +129,47 @@ public class Inventories {
 		return inv;
 	}
 
-//	// Menu for editing a specific info board
-//	public static Inventory createInfoBoardMenu(Main plugin, int slot) {
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(new InventoryMeta(slot), 9, Utils.format("&k") +
-//				Utils.format("&6&lInfo Board " + slot));
-//
-//		// Option to create or relocate info board
-//		if (Utils.getConfigLocation(plugin, "infoBoard." + slot) == null)
-//			inv.setItem(0, InventoryItems.create("Info Board"));
-//		else inv.setItem(0, InventoryItems.relocate("Info Board"));
-//
-//		// Option to teleport to info board
-//		inv.setItem(2, InventoryItems.teleport("Info Board"));
-//
-//		// Option to center the info board
-//		inv.setItem(4, InventoryItems.center("Info Board"));
-//
-//		// Option to remove info board
-//		inv.setItem(6, InventoryItems.remove("INFO BOARD"));
-//
-//		// Option to exit
-//		inv.setItem(8, InventoryItems.exit());
-//
-//		return inv;
-//	}
-//
-//	// Confirmation menu for removing info boards
-//	public static Inventory createInfoBoardConfirmInventory(int slot) {
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(new InventoryMeta(slot), 9, Utils.format("&k") +
-//				Utils.format("&4&lRemove Info Board?"));
-//
-//		// "No" option
-//		inv.setItem(0, InventoryItems.no());
-//
-//		// "Yes" option
-//		inv.setItem(8, InventoryItems.yes());
-//
-//		return inv;
-//	}
-//
+	// Menu for editing a specific info board
+	public static Inventory createInfoBoardMenu(Main plugin, int arena) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&6&lInfo Board " + arena));
+
+		// Option to create or relocate info board
+		if (Utils.getConfigLocation(plugin, "infoBoard." + arena) == null)
+			inv.setItem(0, InventoryItems.create("Info Board"));
+		else inv.setItem(0, InventoryItems.relocate("Info Board"));
+
+		// Option to teleport to info board
+		inv.setItem(2, InventoryItems.teleport("Info Board"));
+
+		// Option to center the info board
+		inv.setItem(4, InventoryItems.center("Info Board"));
+
+		// Option to remove info board
+		inv.setItem(6, InventoryItems.remove("INFO BOARD"));
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Confirmation menu for removing info boards
+	public static Inventory createInfoBoardConfirmInventory(int arena) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(new InventoryMeta(arena), 9, Utils.format("&k") +
+				Utils.format("&4&lRemove Info Board?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
+
 //	// Menu for leaderboards
 //	public static Inventory createLeaderboardInventory() {
 //		// Create inventory

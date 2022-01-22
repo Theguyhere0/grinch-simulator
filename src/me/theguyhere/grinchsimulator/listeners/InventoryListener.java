@@ -22,6 +22,7 @@ import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class InventoryListener implements Listener {
@@ -128,9 +129,9 @@ public class InventoryListener implements Listener {
 			else if (buttonName.contains("Lobby"))
 				player.openInventory(Inventories.createLobbyInventory(plugin));
 
-//			// Open info boards menu
-//			else if (buttonName.contains("Info Boards"))
-//				player.openInventory(Inventories.createInfoBoardInventory(plugin));
+			// Open info boards menu
+			else if (buttonName.contains("Info Boards"))
+				player.openInventory(Inventories.createInfoBoardInventory(plugin));
 
 //			// Open leaderboards menu
 //			else if (buttonName.contains("Leaderboards"))
@@ -193,71 +194,71 @@ public class InventoryListener implements Listener {
 				player.openInventory(Inventories.createArenasInventory());
 		}
 
-//		// Info board menu
-//		else if (title.contains("Info Boards")) {
-//
-//			// Edit board
-//			if (Arrays.asList(Inventories.INFO_BOARD_MATS).contains(buttonType))
-//				player.openInventory(Inventories.createInfoBoardMenu(plugin, slot));
-//
-//			// Exit menu
-//			else if (buttonName.contains("EXIT"))
-//				player.openInventory(Inventories.createArenasInventory());
-//		}
+		// Info board menu
+		else if (title.contains("Info Boards")) {
 
-//		// Info board menu for a specific board
-//		else if (title.contains("Info Board ")) {
-//			InventoryMeta meta = (InventoryMeta) e.getInventory().getHolder();
-//			assert meta != null;
-//			int num = meta.getInteger1();
-//			String path = "infoBoard." + num;
-//
-//			// Create board
-//			if (buttonName.contains("Create")) {
-//				plugin.getArenaManager().setInfoBoard(player.getLocation(), num);
-//				player.sendMessage(Utils.notify("&aInfo board set!"));
-//				player.openInventory(Inventories.createInfoBoardMenu(plugin, num));
-//			}
-//
-//			// Relocate board
-//			else if (buttonName.contains("Relocate")) {
-//				Utils.setConfigurationLocation(plugin, path, player.getLocation());
-//				plugin.getArenaManager().refreshInfoBoard(num);
-//				player.sendMessage(Utils.notify("&aInfo board relocated!"));
-//			}
-//
-//			// Teleport player to info board
-//			else if (buttonName.contains("Teleport")) {
-//				Location location = Utils.getConfigLocationNoRotation(plugin, path);
-//				if (location == null) {
-//					player.sendMessage(Utils.notify("&cNo info board to teleport to!"));
-//					return;
-//				}
-//				player.teleport(location);
-//				player.closeInventory();
-//			}
-//
-//			// Center info board
-//			else if (buttonName.contains("Center")) {
-//				if (Utils.getConfigLocationNoRotation(plugin, path) == null) {
-//					player.sendMessage(Utils.notify("&cNo info board to center!"));
-//					return;
-//				}
-//				plugin.getArenaManager().centerInfoBoard(num);
-//				player.sendMessage(Utils.notify("&aInfo board centered!"));
-//			}
-//
-//			// Remove info board
-//			else if (buttonName.contains("REMOVE"))
-//				if (config.contains(path))
-//					player.openInventory(Inventories.createInfoBoardConfirmInventory(num));
-//				else player.sendMessage(Utils.notify("&cNo info board to remove!"));
-//
-//			// Exit menu
-//			else if (buttonName.contains("EXIT"))
-//				player.openInventory(Inventories.createInfoBoardInventory(plugin));
-//		}
-//
+			// Edit board
+			if (Arrays.asList(Inventories.INFO_BOARD_MATS).contains(buttonType))
+				player.openInventory(Inventories.createInfoBoardMenu(plugin, slot + 1));
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createArenasInventory());
+		}
+
+		// Info board menu for a specific board
+		else if (title.contains("Info Board ")) {
+			InventoryMeta meta = (InventoryMeta) e.getInventory().getHolder();
+			assert meta != null;
+			int num = meta.getInteger1();
+			String path = "infoBoard." + num;
+
+			// Create board
+			if (buttonName.contains("Create")) {
+				plugin.getArenaManager().setInfoBoard(player.getLocation(), num);
+				player.sendMessage(Utils.notify("&aInfo board set!"));
+				player.openInventory(Inventories.createInfoBoardMenu(plugin, num));
+			}
+
+			// Relocate board
+			else if (buttonName.contains("Relocate")) {
+				Utils.setConfigurationLocation(plugin, path, player.getLocation());
+				plugin.getArenaManager().refreshInfoBoard(num);
+				player.sendMessage(Utils.notify("&aInfo board relocated!"));
+			}
+
+			// Teleport player to info board
+			else if (buttonName.contains("Teleport")) {
+				Location location = Utils.getConfigLocationNoRotation(plugin, path);
+				if (location == null) {
+					player.sendMessage(Utils.notify("&cNo info board to teleport to!"));
+					return;
+				}
+				player.teleport(location);
+				player.closeInventory();
+			}
+
+			// Center info board
+			else if (buttonName.contains("Center")) {
+				if (Utils.getConfigLocationNoRotation(plugin, path) == null) {
+					player.sendMessage(Utils.notify("&cNo info board to center!"));
+					return;
+				}
+				plugin.getArenaManager().centerInfoBoard(num);
+				player.sendMessage(Utils.notify("&aInfo board centered!"));
+			}
+
+			// Remove info board
+			else if (buttonName.contains("REMOVE"))
+				if (config.contains(path))
+					player.openInventory(Inventories.createInfoBoardConfirmInventory(num));
+				else player.sendMessage(Utils.notify("&cNo info board to remove!"));
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createInfoBoardInventory(plugin));
+		}
+
 //		// Leaderboard menu
 //		else if (title.contains("Leaderboards")) {
 //			if (buttonName.contains("Total Kills Leaderboard"))
@@ -632,23 +633,40 @@ public class InventoryListener implements Listener {
 				}
 			}
 
-//			// Confirm to remove leaderboard
-//			else if (title.contains("Remove Leaderboard?")) {
-//				// Return to previous menu
-//				if (buttonName.contains("NO"))
-//					player.openInventory(Inventories.createPortalInventory(meta.getInteger1()));
-//
-//				// Remove the leaderboard, then return to previous menu
-//				else if (buttonName.contains("YES")) {
-//					// Delete arena leaderboard
-//					ArenaManager.getArena(meta.getInteger1()).removeArenaBoard();
-//
-//					// Confirm and return
-//					player.sendMessage(Utils.notify("&aLeaderboard removed!"));
-//					player.openInventory(Inventories.createPortalInventory(meta.getInteger1()));
-//				}
-//			}
-//
+			// Confirm to remove present arena leaderboard
+			else if (title.contains("Remove Present LBoard?")) {
+				// Return to previous menu
+				if (buttonName.contains("NO"))
+					player.openInventory(Inventories.createPresentLeaderInventory(meta.getInteger1()));
+
+				// Remove the arena board, then return to previous menu
+				else if (buttonName.contains("YES")) {
+					// Delete arena leaderboard
+					ArenaManager.getArena(meta.getInteger1()).removeArenaBoard(ArenaRecordType.PRESENTS);
+
+					// Confirm and return
+					player.sendMessage(Utils.notify("&aLeaderboard removed!"));
+					player.openInventory(Inventories.createPresentLeaderInventory(meta.getInteger1()));
+				}
+			}
+
+			// Confirm to remove happiness arena leaderboard
+			else if (title.contains("Remove Happiness LBoard?")) {
+				// Return to previous menu
+				if (buttonName.contains("NO"))
+					player.openInventory(Inventories.createHappyLeaderInventory(meta.getInteger1()));
+
+				// Remove the arena board, then return to previous menu
+				else if (buttonName.contains("YES")) {
+					// Delete arena leaderboard
+					ArenaManager.getArena(meta.getInteger1()).removeArenaBoard(ArenaRecordType.HAPPINESS);
+
+					// Confirm and return
+					player.sendMessage(Utils.notify("&aLeaderboard removed!"));
+					player.openInventory(Inventories.createHappyLeaderInventory(meta.getInteger1()));
+				}
+			}
+
 			// Confirm to remove player spawn
 			else if (title.contains("Remove Spawn?")) {
 				// Return to previous menu
@@ -698,29 +716,29 @@ public class InventoryListener implements Listener {
 				}
 			}
 
-//			// Confirm to remove info board
-//			else if (title.contains("Remove Info Board?")) {
-//				String path = "infoBoard." + meta.getInteger1();
-//
-//				// Return to previous menu
-//				if (buttonName.contains("NO"))
-//					player.openInventory(Inventories.createInfoBoardMenu(plugin, meta.getInteger1()));
-//
-//					// Remove the info board, then return to previous menu
-//				else if (buttonName.contains("YES")) {
-//					// Remove info board data
-//					config.set(path, null);
-//					plugin.saveArenaData();
-//
-//					// Remove info board
-//					plugin.getArenaManager().removeInfoBoard(meta.getInteger1());
-//
-//					// Confirm and return
-//					player.sendMessage(Utils.notify("&aInfo board removed!"));
-//					player.openInventory(Inventories.createInfoBoardMenu(plugin, meta.getInteger1()));
-//				}
-//			}
-//
+			// Confirm to remove info board
+			else if (title.contains("Remove Info Board?")) {
+				String path = "infoBoard." + meta.getInteger1();
+
+				// Return to previous menu
+				if (buttonName.contains("NO"))
+					player.openInventory(Inventories.createInfoBoardMenu(plugin, meta.getInteger1()));
+
+					// Remove the info board, then return to previous menu
+				else if (buttonName.contains("YES")) {
+					// Remove info board data
+					config.set(path, null);
+					plugin.saveArenaData();
+
+					// Remove info board
+					plugin.getArenaManager().removeInfoBoard(meta.getInteger1());
+
+					// Confirm and return
+					player.sendMessage(Utils.notify("&aInfo board removed!"));
+					player.openInventory(Inventories.createInfoBoardMenu(plugin, meta.getInteger1()));
+				}
+			}
+
 //			// Confirm to remove total kills leaderboard
 //			else if (title.contains("Remove Total Kills Leaderboard?")) {
 //				String path = "leaderboard.totalKills";

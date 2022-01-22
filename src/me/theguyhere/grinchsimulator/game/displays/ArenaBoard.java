@@ -43,7 +43,7 @@ public class ArenaBoard {
 
 		if (!records.isEmpty())
 			records.forEach(record -> {
-				int rank = records.indexOf(record);
+				int rank = records.indexOf(record) + 1;
 				info.add(rank, Utils.format("&6" + rank + ") &f" + record.getPlayer() + " - &b" +
 						record.getValue()));
 			});

@@ -3,6 +3,7 @@ package me.theguyhere.grinchsimulator.game.models.arenas;
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.exceptions.InvalidLocationException;
 import me.theguyhere.grinchsimulator.game.displays.InfoBoard;
+import me.theguyhere.grinchsimulator.game.displays.Leaderboard;
 import me.theguyhere.grinchsimulator.game.displays.Portal;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
@@ -12,10 +13,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class ArenaManager {
 	private final Main plugin;
@@ -23,7 +21,7 @@ public class ArenaManager {
 	// Tracks arenas, info boards, and leaderboards for the game
 	private static final Arena[] arenas = new Arena[45];
 	public static InfoBoard[] infoBoards = new InfoBoard[8];
-//	public static Map<String, Leaderboard> leaderboards = new HashMap<>();
+	public static Map<String, Leaderboard> leaderboards = new HashMap<>();
 
 	private static Location lobby;
 
@@ -48,18 +46,20 @@ public class ArenaManager {
 						} catch (InvalidLocationException ignored) {
 						}
 					});
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception ignored) {
 		}
-//		Objects.requireNonNull(plugin.getArenaData().getConfigurationSection("leaderboard")).getKeys(false)
-//				.forEach(path -> {
-//					try {
-//						Location location = Utils.getConfigLocationNoPitch(plugin, "leaderboard." + path);
-//						if (location != null)
-//							leaderboards.put(path, new Leaderboard(path, plugin));
-//					} catch (InvalidLocationException ignored) {
-//					}
-//				});
+		try {
+			Objects.requireNonNull(plugin.getArenaData().getConfigurationSection("leaderboard")).getKeys(false)
+					.forEach(path -> {
+						try {
+							Location location = Utils.getConfigLocationNoPitch(plugin, "leaderboard." + path);
+							if (location != null)
+								leaderboards.put(path, new Leaderboard(path, plugin));
+						} catch (InvalidLocationException ignored) {
+						}
+					});
+		} catch (Exception ignored) {
+		}
 		setLobby(Utils.getConfigLocation(plugin, "lobby"));
 	}
 
@@ -195,58 +195,60 @@ public class ArenaManager {
 		Utils.setConfigurationLocation(plugin, "infoBoard." + num, null);
 	}
 
-//	/**
-//	 * Creates a new leaderboard at the given location and deletes the old leaderboard.
-//	 * @param location - New location.
-//	 */
-//	public void setLeaderboard(Location location, String type) {
-//		// Save config location
-//		Utils.setConfigurationLocation(plugin, "leaderboard." + type, location);
-//
-//		// Recreate the leaderboard
-//		refreshLeaderboard(type);
-//	}
-//
-//	/**
-//	 * Recreates the leaderboard in game based on the location in the arena file.
-//	 */
-//	public void refreshLeaderboard(String type) {
-//		// Delete old board if needed
-//		if (leaderboards.get(type) != null)
-//			leaderboards.remove(type);
-//
-//		try {
-//			// Create a new board and display it
-//			leaderboards.put(type, new Leaderboard(type, plugin));
-//			leaderboards.get(type).displayForOnline();
-//		} catch (Exception e) {
-//			Utils.debugError("Invalid location for leaderboard " + type, 1);
-//			Utils.debugInfo("Leaderboard location data may be corrupt. If data cannot be manually corrected in " +
-//					"arenaData.yml, please delete the location data for leaderboard " + type + ".", 1);
-//		}
-//	}
-//
-//	/**
-//	 * Centers the leaderboard location along the x and z axis.
-//	 */
-//	public void centerLeaderboard(String type) {
-//		// Center the location
-//		Utils.centerConfigLocation(plugin, "leaderboard." + type);
-//
-//		// Recreate the leaderboard
-//		refreshLeaderboard(type);
-//	}
-//
-//	/**
-//	 * Removes the leaderboard from the game and from the arena file.
-//	 */
-//	public void removeLeaderboard(String type) {
-//		if (leaderboards.get(type) != null) {
-//			leaderboards.get(type).remove();
-//			leaderboards.remove(type);
-//		}
-//		Utils.setConfigurationLocation(plugin, "leaderboard." + type, null);
-//	}
+	/**
+	 * Creates a new leaderboard at the given location and deletes the old leaderboard.
+	 * @param location - New location.
+	 */
+	public void setLeaderboard(Location location, String type) {
+		// Save config location
+		Utils.setConfigurationLocation(plugin, "leaderboard." + type, location);
+
+		// Recreate the leaderboard
+		refreshLeaderboard(type);
+	}
+
+	/**
+	 * Recreates the leaderboard in game based on the location in the arena file.
+	 */
+	public void refreshLeaderboard(String type) {
+		// Delete old board if needed
+		if (leaderboards.get(type) != null) {
+			leaderboards.get(type).remove();
+			leaderboards.remove(type);
+		}
+
+		try {
+			// Create a new board and display it
+			leaderboards.put(type, new Leaderboard(type, plugin));
+			leaderboards.get(type).displayForOnline();
+		} catch (Exception e) {
+			Utils.debugError("Invalid location for leaderboard " + type, 1);
+			Utils.debugInfo("Leaderboard location data may be corrupt. If data cannot be manually corrected in " +
+					"arenaData.yml, please delete the location data for leaderboard " + type + ".", 1);
+		}
+	}
+
+	/**
+	 * Centers the leaderboard location along the x and z axis.
+	 */
+	public void centerLeaderboard(String type) {
+		// Center the location
+		Utils.centerConfigLocation(plugin, "leaderboard." + type);
+
+		// Recreate the leaderboard
+		refreshLeaderboard(type);
+	}
+
+	/**
+	 * Removes the leaderboard from the game and from the arena file.
+	 */
+	public void removeLeaderboard(String type) {
+		if (leaderboards.get(type) != null) {
+			leaderboards.get(type).remove();
+			leaderboards.remove(type);
+		}
+		Utils.setConfigurationLocation(plugin, "leaderboard." + type, null);
+	}
 
 	/**
 	 * Display all portals to a player.
@@ -276,13 +278,13 @@ public class ArenaManager {
 		Arrays.stream(infoBoards).filter(Objects::nonNull).forEach(infoBoard -> infoBoard.displayForPlayer(player));
 	}
 
-//	/**
-//	 * Display all leaderboards to a player.
-//	 * @param player - The player to display all leaderboards to.
-//	 */
-//	public static void displayAllLeaderboards(Player player) {
-//		leaderboards.forEach((type, board) -> board.displayForPlayer(player));
-//	}
+	/**
+	 * Display all leaderboards to a player.
+	 * @param player - The player to display all leaderboards to.
+	 */
+	public static void displayAllLeaderboards(Player player) {
+		leaderboards.forEach((type, board) -> board.displayForPlayer(player));
+	}
 
 	/**
 	 * Display everything displayable to a player.
@@ -292,7 +294,7 @@ public class ArenaManager {
 		displayAllPortals(player);
 		displayAllArenaBoards(player);
 		displayAllInfoBoards(player);
-//		displayAllLeaderboards(player);
+		displayAllLeaderboards(player);
 	}
 
 	/**
@@ -318,13 +320,13 @@ public class ArenaManager {
 		}
 	}
 
-//	/**
-//	 * Refresh every leaderboard.
-//	 */
-//	public void refreshLeaderboards() {
-//		List<String> types = new ArrayList<>(leaderboards.keySet());
-//		types.forEach(this::refreshLeaderboard);
-//	}
+	/**
+	 * Refresh every leaderboard.
+	 */
+	public void refreshLeaderboards() {
+		List<String> types = new ArrayList<>(leaderboards.keySet());
+		types.forEach(this::refreshLeaderboard);
+	}
 
 	/**
 	 * Refresh all holographics.
@@ -333,7 +335,7 @@ public class ArenaManager {
 		refreshPortals();
 		refreshArenaBoards();
 		refreshInfoBoards();
-//		refreshLeaderboards();
+		refreshLeaderboards();
 	}
 
 	public static void removePortals() {

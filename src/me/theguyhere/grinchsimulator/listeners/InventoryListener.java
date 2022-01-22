@@ -133,9 +133,9 @@ public class InventoryListener implements Listener {
 			else if (buttonName.contains("Info Boards"))
 				player.openInventory(Inventories.createInfoBoardInventory(plugin));
 
-//			// Open leaderboards menu
-//			else if (buttonName.contains("Leaderboards"))
-//				player.openInventory(Inventories.createLeaderboardInventory());
+			// Open leaderboards menu
+			else if (buttonName.contains("Leaderboards"))
+				player.openInventory(Inventories.createLeaderboardInventory());
 
 			// Close inventory
 			else if (buttonName.contains("EXIT"))
@@ -259,277 +259,224 @@ public class InventoryListener implements Listener {
 				player.openInventory(Inventories.createInfoBoardInventory(plugin));
 		}
 
-//		// Leaderboard menu
-//		else if (title.contains("Leaderboards")) {
-//			if (buttonName.contains("Total Kills Leaderboard"))
-//				player.openInventory(Inventories.createTotalKillsLeaderboardInventory(plugin));
-//
-//			if (buttonName.contains("Top Kills Leaderboard"))
-//				player.openInventory(Inventories.createTopKillsLeaderboardInventory(plugin));
-//
-//			if (buttonName.contains("Total Gems Leaderboard"))
-//				player.openInventory(Inventories.createTotalGemsLeaderboardInventory(plugin));
-//
-//			if (buttonName.contains("Top Balance Leaderboard"))
-//				player.openInventory(Inventories.createTopBalanceLeaderboardInventory(plugin));
-//
-//			if (buttonName.contains("Top Wave Leaderboard"))
-//				player.openInventory(Inventories.createTopWaveLeaderboardInventory(plugin));
-//
-//			// Exit menu
-//			else if (buttonName.contains("EXIT"))
-//				player.openInventory(Inventories.createArenasInventory());
-//		}
-//
-//		// Total kills leaderboard menu
-//		else if (title.contains(Utils.format("&4&lTotal Kills Leaderboard"))) {
-//			String path = "leaderboard.totalKills";
-//
-//			// Create leaderboard
-//			if (buttonName.contains("Create")) {
-//				plugin.getArenaManager().setLeaderboard(player.getLocation(), "totalKills");
-//				player.sendMessage(Utils.notify("&aLeaderboard set!"));
-//				player.openInventory(Inventories.createTotalKillsLeaderboardInventory(plugin));
-//			}
-//
-//			// Relocate leaderboard
-//			else if (buttonName.contains("Relocate")) {
-//				plugin.getArenaManager().setLeaderboard(player.getLocation(), "totalKills");
-//				player.sendMessage(Utils.notify("&aLeaderboard relocated!"));
-//			}
-//
-//			// Teleport player to leaderboard
-//			else if (buttonName.contains("Teleport")) {
-//				Location location = Utils.getConfigLocationNoRotation(plugin, path);
-//				if (location == null) {
-//					player.sendMessage(Utils.notify("&cNo leaderboard to teleport to!"));
-//					return;
-//				}
-//				player.teleport(location);
-//				player.closeInventory();
-//			}
-//
-//			// Center leaderboard
-//			else if (buttonName.contains("Center")) {
-//				Location location = Utils.getConfigLocationNoRotation(plugin, path);
-//				if (location == null) {
-//					player.sendMessage(Utils.notify("&cNo leaderboard to center!"));
-//					return;
-//				}
-//				plugin.getArenaManager().centerLeaderboard("totalKills");
-//				player.sendMessage(Utils.notify("&aLeaderboard centered!"));
-//			}
-//
-//			// Remove leaderboard
-//			else if (buttonName.contains("REMOVE"))
-//				if (config.contains(path))
-//					player.openInventory(Inventories.createTotalKillsConfirmInventory());
-//				else player.sendMessage(Utils.notify("&cNo leaderboard to remove!"));
-//
-//			// Exit menu
-//			else if (buttonName.contains("EXIT"))
-//				player.openInventory(Inventories.createLeaderboardInventory());
-//		}
-//
-//		// Top kills leaderboard menu
-//		else if (title.contains(Utils.format("&c&lTop Kills Leaderboard"))) {
-//			String path = "leaderboard.topKills";
-//
-//			// Create leaderboard
-//			if (buttonName.contains("Create")) {
-//				plugin.getArenaManager().setLeaderboard(player.getLocation(), "topKills");
-//				player.sendMessage(Utils.notify("&aLeaderboard set!"));
-//				player.openInventory(Inventories.createTopKillsLeaderboardInventory(plugin));
-//			}
-//
-//			// Relocate leaderboard
-//			else if (buttonName.contains("Relocate")) {
-//				plugin.getArenaManager().setLeaderboard(player.getLocation(), "topKills");
-//				player.sendMessage(Utils.notify("&aLeaderboard relocated!"));
-//			}
-//
-//			// Teleport player to leaderboard
-//			else if (buttonName.contains("Teleport")) {
-//				Location location = Utils.getConfigLocationNoRotation(plugin, path);
-//				if (location == null) {
-//					player.sendMessage(Utils.notify("&cNo leaderboard to teleport to!"));
-//					return;
-//				}
-//				player.teleport(location);
-//				player.closeInventory();
-//			}
-//
-//			// Center leaderboard
-//			else if (buttonName.contains("Center")) {
-//				Location location = Utils.getConfigLocationNoRotation(plugin, path);
-//				if (location == null) {
-//					player.sendMessage(Utils.notify("&cNo leaderboard to center!"));
-//					return;
-//				}
-//				plugin.getArenaManager().refreshLeaderboard("topKills");
-//				player.sendMessage(Utils.notify("&aLeaderboard centered!"));
-//			}
-//
-//			// Remove leaderboard
-//			else if (buttonName.contains("REMOVE"))
-//				if (config.contains(path))
-//					player.openInventory(Inventories.createTopKillsConfirmInventory());
-//				else player.sendMessage(Utils.notify("&cNo leaderboard to remove!"));
-//
-//			// Exit menu
-//			else if (buttonName.contains("EXIT"))
-//				player.openInventory(Inventories.createLeaderboardInventory());
-//		}
-//
-//		// Total gems leaderboard menu
-//		else if (title.contains(Utils.format("&2&lTotal Gems Leaderboard"))) {
-//			String path = "leaderboard.totalGems";
-//
-//			// Create leaderboard
-//			if (buttonName.contains("Create")) {
-//				plugin.getArenaManager().setLeaderboard(player.getLocation(), "totalGems");
-//				player.sendMessage(Utils.notify("&aLeaderboard set!"));
-//				player.openInventory(Inventories.createTotalGemsLeaderboardInventory(plugin));
-//			}
-//
-//			// Relocate leaderboard
-//			else if (buttonName.contains("Relocate")) {
-//				plugin.getArenaManager().setLeaderboard(player.getLocation(), "totalGems");
-//				player.sendMessage(Utils.notify("&aLeaderboard relocated!"));
-//			}
-//
-//			// Teleport player to leaderboard
-//			else if (buttonName.contains("Teleport")) {
-//				Location location = Utils.getConfigLocationNoRotation(plugin, path);
-//				if (location == null) {
-//					player.sendMessage(Utils.notify("&cNo leaderboard to teleport to!"));
-//					return;
-//				}
-//				player.teleport(location);
-//				player.closeInventory();
-//			}
-//
-//			// Center leaderboard
-//			else if (buttonName.contains("Center")) {
-//				Location location = Utils.getConfigLocationNoRotation(plugin, path);
-//				if (location == null) {
-//					player.sendMessage(Utils.notify("&cNo leaderboard to center!"));
-//					return;
-//				}
-//				plugin.getArenaManager().refreshLeaderboard("totalGems");
-//				player.sendMessage(Utils.notify("&aLeaderboard centered!"));
-//			}
-//
-//			// Remove leaderboard
-//			else if (buttonName.contains("REMOVE"))
-//				if (config.contains(path))
-//					player.openInventory(Inventories.createTotalGemsConfirmInventory());
-//				else player.sendMessage(Utils.notify("&cNo leaderboard to remove!"));
-//
-//			// Exit menu
-//			else if (buttonName.contains("EXIT"))
-//				player.openInventory(Inventories.createLeaderboardInventory());
-//		}
-//
-//		// Top balance leaderboard menu
-//		else if (title.contains(Utils.format("&a&lTop Balance Leaderboard"))) {
-//			String path = "leaderboard.topBalance";
-//
-//			// Create leaderboard
-//			if (buttonName.contains("Create")) {
-//				plugin.getArenaManager().setLeaderboard(player.getLocation(), "topBalance");
-//				player.sendMessage(Utils.notify("&aLeaderboard set!"));
-//				player.openInventory(Inventories.createTopBalanceLeaderboardInventory(plugin));
-//			}
-//
-//			// Relocate leaderboard
-//			else if (buttonName.contains("Relocate")) {
-//				plugin.getArenaManager().setLeaderboard(player.getLocation(), "topBalance");
-//				player.sendMessage(Utils.notify("&aLeaderboard relocated!"));
-//			}
-//
-//			// Teleport player to leaderboard
-//			else if (buttonName.contains("Teleport")) {
-//				Location location = Utils.getConfigLocationNoRotation(plugin, path);
-//				if (location == null) {
-//					player.sendMessage(Utils.notify("&cNo leaderboard to teleport to!"));
-//					return;
-//				}
-//				player.teleport(location);
-//				player.closeInventory();
-//			}
-//
-//			// Center leaderboard
-//			else if (buttonName.contains("Center")) {
-//				Location location = Utils.getConfigLocationNoRotation(plugin, path);
-//				if (location == null) {
-//					player.sendMessage(Utils.notify("&cNo leaderboard to center!"));
-//					return;
-//				}
-//				plugin.getArenaManager().refreshLeaderboard("topBalance");
-//				player.sendMessage(Utils.notify("&aLeaderboard centered!"));
-//			}
-//
-//			// Remove leaderboard
-//			else if (buttonName.contains("REMOVE"))
-//				if (config.contains(path))
-//					player.openInventory(Inventories.createTopBalanceConfirmInventory());
-//				else player.sendMessage(Utils.notify("&cNo leaderboard to remove!"));
-//
-//			// Exit menu
-//			else if (buttonName.contains("EXIT"))
-//				player.openInventory(Inventories.createLeaderboardInventory());
-//		}
-//
-//		// Top wave leaderboard menu
-//		else if (title.contains(Utils.format("&9&lTop Wave Leaderboard"))) {
-//			String path = "leaderboard.topWave";
-//
-//			// Create leaderboard
-//			if (buttonName.contains("Create")) {
-//				plugin.getArenaManager().setLeaderboard(player.getLocation(), "topWave");
-//				player.sendMessage(Utils.notify("&aLeaderboard set!"));
-//				player.openInventory(Inventories.createTopWaveLeaderboardInventory(plugin));
-//			}
-//
-//			// Relocate leaderboard
-//			else if (buttonName.contains("Relocate")) {
-//				plugin.getArenaManager().setLeaderboard(player.getLocation(), "topWave");
-//				player.sendMessage(Utils.notify("&aLeaderboard relocated!"));
-//			}
-//
-//			// Teleport player to leaderboard
-//			else if (buttonName.contains("Teleport")) {
-//				Location location = Utils.getConfigLocationNoRotation(plugin, path);
-//				if (location == null) {
-//					player.sendMessage(Utils.notify("&cNo leaderboard to teleport to!"));
-//					return;
-//				}
-//				player.teleport(location);
-//				player.closeInventory();
-//			}
-//
-//			// Center leaderboard
-//			else if (buttonName.contains("Center")) {
-//				Location location = Utils.getConfigLocationNoRotation(plugin, path);
-//				if (location == null) {
-//					player.sendMessage(Utils.notify("&cNo leaderboard to center!"));
-//					return;
-//				}
-//				plugin.getArenaManager().refreshLeaderboard("topWave");
-//				player.sendMessage(Utils.notify("&aLeaderboard centered!"));
-//			}
-//
-//			// Remove leaderboard
-//			else if (buttonName.contains("REMOVE"))
-//				if (config.contains(path))
-//					player.openInventory(Inventories.createTopWaveConfirmInventory());
-//				else player.sendMessage(Utils.notify("&cNo leaderboard to remove!"));
-//
-//			// Exit menu
-//			else if (buttonName.contains("EXIT"))
-//				player.openInventory(Inventories.createLeaderboardInventory());
-//		}
+		// Leaderboard menu
+		else if (title.contains("Leaderboards")) {
+			if (buttonName.contains("Total Presents Leaderboard"))
+				player.openInventory(Inventories.createTotalPresentsLeaderboardInventory(plugin));
+
+			if (buttonName.contains("Top Presents Leaderboard"))
+				player.openInventory(Inventories.createTopPresentsLeaderboardInventory(plugin));
+
+			if (buttonName.contains("Total Happiness Leaderboard"))
+				player.openInventory(Inventories.createTotalHappinessLeaderboardInventory(plugin));
+
+			if (buttonName.contains("Top Happiness Leaderboard"))
+				player.openInventory(Inventories.createTopHappinessLeaderboardInventory(plugin));
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createArenasInventory());
+		}
+
+		// Total presents leaderboard menu
+		else if (title.contains(Utils.format("&4&lTotal Presents Leaderboard"))) {
+			String path = "leaderboard.totalPresents";
+
+			// Create leaderboard
+			if (buttonName.contains("Create")) {
+				plugin.getArenaManager().setLeaderboard(player.getLocation(), "totalPresents");
+				player.sendMessage(Utils.notify("&aLeaderboard set!"));
+				player.openInventory(Inventories.createTotalPresentsLeaderboardInventory(plugin));
+			}
+
+			// Relocate leaderboard
+			else if (buttonName.contains("Relocate")) {
+				plugin.getArenaManager().setLeaderboard(player.getLocation(), "totalPresents");
+				player.sendMessage(Utils.notify("&aLeaderboard relocated!"));
+			}
+
+			// Teleport player to leaderboard
+			else if (buttonName.contains("Teleport")) {
+				Location location = Utils.getConfigLocationNoRotation(plugin, path);
+				if (location == null) {
+					player.sendMessage(Utils.notify("&cNo leaderboard to teleport to!"));
+					return;
+				}
+				player.teleport(location);
+				player.closeInventory();
+			}
+
+			// Center leaderboard
+			else if (buttonName.contains("Center")) {
+				Location location = Utils.getConfigLocationNoRotation(plugin, path);
+				if (location == null) {
+					player.sendMessage(Utils.notify("&cNo leaderboard to center!"));
+					return;
+				}
+				plugin.getArenaManager().centerLeaderboard("totalPresents");
+				player.sendMessage(Utils.notify("&aLeaderboard centered!"));
+			}
+
+			// Remove leaderboard
+			else if (buttonName.contains("REMOVE"))
+				if (config.contains(path))
+					player.openInventory(Inventories.createTotalPresentsConfirmInventory());
+				else player.sendMessage(Utils.notify("&cNo leaderboard to remove!"));
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createLeaderboardInventory());
+		}
+
+		// Top presents leaderboard menu
+		else if (title.contains(Utils.format("&c&lTop Presents Leaderboard"))) {
+			String path = "leaderboard.topPresents";
+
+			// Create leaderboard
+			if (buttonName.contains("Create")) {
+				plugin.getArenaManager().setLeaderboard(player.getLocation(), "topPresents");
+				player.sendMessage(Utils.notify("&aLeaderboard set!"));
+				player.openInventory(Inventories.createTopPresentsLeaderboardInventory(plugin));
+			}
+
+			// Relocate leaderboard
+			else if (buttonName.contains("Relocate")) {
+				plugin.getArenaManager().setLeaderboard(player.getLocation(), "topPresents");
+				player.sendMessage(Utils.notify("&aLeaderboard relocated!"));
+			}
+
+			// Teleport player to leaderboard
+			else if (buttonName.contains("Teleport")) {
+				Location location = Utils.getConfigLocationNoRotation(plugin, path);
+				if (location == null) {
+					player.sendMessage(Utils.notify("&cNo leaderboard to teleport to!"));
+					return;
+				}
+				player.teleport(location);
+				player.closeInventory();
+			}
+
+			// Center leaderboard
+			else if (buttonName.contains("Center")) {
+				Location location = Utils.getConfigLocationNoRotation(plugin, path);
+				if (location == null) {
+					player.sendMessage(Utils.notify("&cNo leaderboard to center!"));
+					return;
+				}
+				plugin.getArenaManager().refreshLeaderboard("topPresents");
+				player.sendMessage(Utils.notify("&aLeaderboard centered!"));
+			}
+
+			// Remove leaderboard
+			else if (buttonName.contains("REMOVE"))
+				if (config.contains(path))
+					player.openInventory(Inventories.createTopPresentsConfirmInventory());
+				else player.sendMessage(Utils.notify("&cNo leaderboard to remove!"));
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createLeaderboardInventory());
+		}
+
+		// Total happiness leaderboard menu
+		else if (title.contains(Utils.format("&5&lTotal Happiness Leaderboard"))) {
+			String path = "leaderboard.totalHappiness";
+
+			// Create leaderboard
+			if (buttonName.contains("Create")) {
+				plugin.getArenaManager().setLeaderboard(player.getLocation(), "totalHappiness");
+				player.sendMessage(Utils.notify("&aLeaderboard set!"));
+				player.openInventory(Inventories.createTotalHappinessLeaderboardInventory(plugin));
+			}
+
+			// Relocate leaderboard
+			else if (buttonName.contains("Relocate")) {
+				plugin.getArenaManager().setLeaderboard(player.getLocation(), "totalHappiness");
+				player.sendMessage(Utils.notify("&aLeaderboard relocated!"));
+			}
+
+			// Teleport player to leaderboard
+			else if (buttonName.contains("Teleport")) {
+				Location location = Utils.getConfigLocationNoRotation(plugin, path);
+				if (location == null) {
+					player.sendMessage(Utils.notify("&cNo leaderboard to teleport to!"));
+					return;
+				}
+				player.teleport(location);
+				player.closeInventory();
+			}
+
+			// Center leaderboard
+			else if (buttonName.contains("Center")) {
+				Location location = Utils.getConfigLocationNoRotation(plugin, path);
+				if (location == null) {
+					player.sendMessage(Utils.notify("&cNo leaderboard to center!"));
+					return;
+				}
+				plugin.getArenaManager().refreshLeaderboard("totalHappiness");
+				player.sendMessage(Utils.notify("&aLeaderboard centered!"));
+			}
+
+			// Remove leaderboard
+			else if (buttonName.contains("REMOVE"))
+				if (config.contains(path))
+					player.openInventory(Inventories.createTotalHappinessConfirmInventory());
+				else player.sendMessage(Utils.notify("&cNo leaderboard to remove!"));
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createLeaderboardInventory());
+		}
+
+		// Top happiness leaderboard menu
+		else if (title.contains(Utils.format("&d&lTop Happiness Leaderboard"))) {
+			String path = "leaderboard.topHappiness";
+
+			// Create leaderboard
+			if (buttonName.contains("Create")) {
+				plugin.getArenaManager().setLeaderboard(player.getLocation(), "topHappiness");
+				player.sendMessage(Utils.notify("&aLeaderboard set!"));
+				player.openInventory(Inventories.createTopHappinessLeaderboardInventory(plugin));
+			}
+
+			// Relocate leaderboard
+			else if (buttonName.contains("Relocate")) {
+				plugin.getArenaManager().setLeaderboard(player.getLocation(), "topHappiness");
+				player.sendMessage(Utils.notify("&aLeaderboard relocated!"));
+			}
+
+			// Teleport player to leaderboard
+			else if (buttonName.contains("Teleport")) {
+				Location location = Utils.getConfigLocationNoRotation(plugin, path);
+				if (location == null) {
+					player.sendMessage(Utils.notify("&cNo leaderboard to teleport to!"));
+					return;
+				}
+				player.teleport(location);
+				player.closeInventory();
+			}
+
+			// Center leaderboard
+			else if (buttonName.contains("Center")) {
+				Location location = Utils.getConfigLocationNoRotation(plugin, path);
+				if (location == null) {
+					player.sendMessage(Utils.notify("&cNo leaderboard to center!"));
+					return;
+				}
+				plugin.getArenaManager().refreshLeaderboard("topHappiness");
+				player.sendMessage(Utils.notify("&aLeaderboard centered!"));
+			}
+
+			// Remove leaderboard
+			else if (buttonName.contains("REMOVE"))
+				if (config.contains(path))
+					player.openInventory(Inventories.createTopHappinessConfirmInventory());
+				else player.sendMessage(Utils.notify("&cNo leaderboard to remove!"));
+
+			// Exit menu
+			else if (buttonName.contains("EXIT"))
+				player.openInventory(Inventories.createLeaderboardInventory());
+		}
 
 		// Menu for an arena
 		else if (title.contains(Utils.format("&2&lEdit "))) {
@@ -739,120 +686,97 @@ public class InventoryListener implements Listener {
 				}
 			}
 
-//			// Confirm to remove total kills leaderboard
-//			else if (title.contains("Remove Total Kills Leaderboard?")) {
-//				String path = "leaderboard.totalKills";
-//
-//				// Return to previous menu
-//				if (buttonName.contains("NO"))
-//					player.openInventory(Inventories.createTotalKillsLeaderboardInventory(plugin));
-//
-//				// Remove the leaderboard, then return to previous menu
-//				else if (buttonName.contains("YES")) {
-//					// Remove leaderboard data
-//					config.set(path, null);
-//					plugin.saveArenaData();
-//
-//					// Remove leaderboard
-//					plugin.getArenaManager().removeLeaderboard("totalKills");
-//
-//					// Confirm and return
-//					player.sendMessage(Utils.notify("&aLeaderboard removed!"));
-//					player.openInventory(Inventories.createTotalKillsLeaderboardInventory(plugin));
-//				}
-//			}
-//
-//			// Confirm to remove top kills leaderboard
-//			else if (title.contains("Remove Top Kills Leaderboard?")) {
-//				String path = "leaderboard.topKills";
-//
-//				// Return to previous menu
-//				if (buttonName.contains("NO"))
-//					player.openInventory(Inventories.createTopKillsLeaderboardInventory(plugin));
-//
-//				// Remove the leaderboard, then return to previous menu
-//				else if (buttonName.contains("YES")) {
-//					// Remove leaderboard data
-//					config.set(path, null);
-//					plugin.saveArenaData();
-//
-//					// Remove leaderboard
-//					plugin.getArenaManager().removeLeaderboard("topKills");
-//
-//					// Confirm and return
-//					player.sendMessage(Utils.notify("&aLeaderboard removed!"));
-//					player.openInventory(Inventories.createTopKillsLeaderboardInventory(plugin));
-//				}
-//			}
-//
-//			// Confirm to remove total gems leaderboard
-//			else if (title.contains("Remove Total Gems Leaderboard?")) {
-//				String path = "leaderboard.totalGems";
-//
-//				// Return to previous menu
-//				if (buttonName.contains("NO"))
-//					player.openInventory(Inventories.createTotalGemsLeaderboardInventory(plugin));
-//
-//				// Remove the leaderboard, then return to previous menu
-//				else if (buttonName.contains("YES")) {
-//					// Remove leaderboard data
-//					config.set(path, null);
-//					plugin.saveArenaData();
-//
-//					// Remove leaderboard
-//					plugin.getArenaManager().removeLeaderboard("totalGems");
-//
-//					// Confirm and return
-//					player.sendMessage(Utils.notify("&aLeaderboard removed!"));
-//					player.openInventory(Inventories.createTotalGemsLeaderboardInventory(plugin));
-//				}
-//			}
-//
-//			// Confirm to remove top balance leaderboard
-//			else if (title.contains("Remove Top Balance Leaderboard?")) {
-//				String path = "leaderboard.topBalance";
-//
-//				// Return to previous menu
-//				if (buttonName.contains("NO"))
-//					player.openInventory(Inventories.createTopBalanceLeaderboardInventory(plugin));
-//
-//				// Remove the leaderboard, then return to previous menu
-//				else if (buttonName.contains("YES")) {
-//					// Remove leaderboard data
-//					config.set(path, null);
-//					plugin.saveArenaData();
-//
-//					// Remove leaderboard
-//					plugin.getArenaManager().removeLeaderboard("topBalance");
-//
-//					// Confirm and return
-//					player.sendMessage(Utils.notify("&aLeaderboard removed!"));
-//					player.openInventory(Inventories.createTopBalanceLeaderboardInventory(plugin));
-//				}
-//			}
-//
-//			// Confirm to remove top wave leaderboard
-//			else if (title.contains("Remove Top Wave Leaderboard?")) {
-//				String path = "leaderboard.topWave";
-//
-//				// Return to previous menu
-//				if (buttonName.contains("NO"))
-//					player.openInventory(Inventories.createTopWaveLeaderboardInventory(plugin));
-//
-//				// Remove the leaderboard, then return to previous menu
-//				else if (buttonName.contains("YES")) {
-//					// Remove leaderboard data
-//					config.set(path, null);
-//					plugin.saveArenaData();
-//
-//					// Remove leaderboard
-//					plugin.getArenaManager().removeLeaderboard("topWave");
-//
-//					// Confirm and return
-//					player.sendMessage(Utils.notify("&aLeaderboard removed!"));
-//					player.openInventory(Inventories.createTopWaveLeaderboardInventory(plugin));
-//				}
-//			}
+			// Confirm to remove total presents leaderboard
+			else if (title.contains("Remove Total Presents Leaderboard?")) {
+				String path = "leaderboard.totalPresents";
+
+				// Return to previous menu
+				if (buttonName.contains("NO"))
+					player.openInventory(Inventories.createTotalPresentsLeaderboardInventory(plugin));
+
+				// Remove the leaderboard, then return to previous menu
+				else if (buttonName.contains("YES")) {
+					// Remove leaderboard data
+					config.set(path, null);
+					plugin.saveArenaData();
+
+					// Remove leaderboard
+					plugin.getArenaManager().removeLeaderboard("totalPresents");
+
+					// Confirm and return
+					player.sendMessage(Utils.notify("&aLeaderboard removed!"));
+					player.openInventory(Inventories.createTotalPresentsLeaderboardInventory(plugin));
+				}
+			}
+
+			// Confirm to remove top presents leaderboard
+			else if (title.contains("Remove Top Presents Leaderboard?")) {
+				String path = "leaderboard.topPresents";
+
+				// Return to previous menu
+				if (buttonName.contains("NO"))
+					player.openInventory(Inventories.createTopPresentsLeaderboardInventory(plugin));
+
+				// Remove the leaderboard, then return to previous menu
+				else if (buttonName.contains("YES")) {
+					// Remove leaderboard data
+					config.set(path, null);
+					plugin.saveArenaData();
+
+					// Remove leaderboard
+					plugin.getArenaManager().removeLeaderboard("topPresents");
+
+					// Confirm and return
+					player.sendMessage(Utils.notify("&aLeaderboard removed!"));
+					player.openInventory(Inventories.createTopPresentsLeaderboardInventory(plugin));
+				}
+			}
+
+			// Confirm to remove total happiness leaderboard
+			else if (title.contains("Remove Total Happiness Leaderboard?")) {
+				String path = "leaderboard.totalHappiness";
+
+				// Return to previous menu
+				if (buttonName.contains("NO"))
+					player.openInventory(Inventories.createTotalHappinessLeaderboardInventory(plugin));
+
+				// Remove the leaderboard, then return to previous menu
+				else if (buttonName.contains("YES")) {
+					// Remove leaderboard data
+					config.set(path, null);
+					plugin.saveArenaData();
+
+					// Remove leaderboard
+					plugin.getArenaManager().removeLeaderboard("totalHappiness");
+
+					// Confirm and return
+					player.sendMessage(Utils.notify("&aLeaderboard removed!"));
+					player.openInventory(Inventories.createTotalHappinessLeaderboardInventory(plugin));
+				}
+			}
+
+			// Confirm to remove top happiness leaderboard
+			else if (title.contains("Remove Top Happiness Leaderboard?")) {
+				String path = "leaderboard.topHappiness";
+
+				// Return to previous menu
+				if (buttonName.contains("NO"))
+					player.openInventory(Inventories.createTopHappinessLeaderboardInventory(plugin));
+
+				// Remove the leaderboard, then return to previous menu
+				else if (buttonName.contains("YES")) {
+					// Remove leaderboard data
+					config.set(path, null);
+					plugin.saveArenaData();
+
+					// Remove leaderboard
+					plugin.getArenaManager().removeLeaderboard("topHappiness");
+
+					// Confirm and return
+					player.sendMessage(Utils.notify("&aLeaderboard removed!"));
+					player.openInventory(Inventories.createTopHappinessLeaderboardInventory(plugin));
+				}
+			}
 
 			// Confirm to delete all presents
 			else if (title.contains("Remove All Presents?")) {

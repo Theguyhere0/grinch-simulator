@@ -226,6 +226,13 @@ public class Arena {
             playerData.set(player.getName() + ".topHappiness", gamer.getHappiness());
         plugin.savePlayerData();
 
+        // Check for arena record
+        checkNewRecord(new ArenaRecord(gamer.getPresents(), player.getName(), ArenaRecordType.PRESENTS));
+        checkNewRecord(new ArenaRecord(gamer.getHappiness(), player.getName(), ArenaRecordType.HAPPINESS));
+
+        // Refresh leaderboards
+        plugin.getArenaManager().refreshLeaderboards();
+
         players.forEach(ArenaManager::createBoard);
     }
 

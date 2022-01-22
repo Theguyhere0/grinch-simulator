@@ -27,7 +27,7 @@ import java.util.Objects;
 public class Inventories {
 	// Easily alternate between different materials
 	public static final Material[] INFO_BOARD_MATS = {Material.DARK_OAK_SIGN, Material.BIRCH_SIGN};
-	private static final String CONSTRUCTION = Utils.format("&6Under Construction!");
+//	private static final String CONSTRUCTION = Utils.format("&6Under Construction!");
 
 	// Menu of all the arenas
 	public static Inventory createArenasInventory() {
@@ -55,7 +55,7 @@ public class Inventories {
 
 		// Option to set leaderboard hologram
 		inv.setItem(47, Utils.createItem(Material.GOLDEN_HELMET, Utils.format("&e&lLeaderboards"),
-				Utils.BUTTON_FLAGS, null, CONSTRUCTION));
+				Utils.BUTTON_FLAGS, null));
 
 		// Option to exit
 		inv.setItem(53, InventoryItems.exit());
@@ -170,233 +170,189 @@ public class Inventories {
 		return inv;
 	}
 
-//	// Menu for leaderboards
-//	public static Inventory createLeaderboardInventory() {
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
-//				Utils.format("&e&lLeaderboards"));
-//
-//		// Option to modify total kills leaderboard
-//		inv.setItem(0, Utils.createItem(Material.DRAGON_HEAD, Utils.format("&4&lTotal Kills Leaderboard")));
-//
-//		// Option to modify top kills leaderboard
-//		inv.setItem(1, Utils.createItem(Material.ZOMBIE_HEAD, Utils.format("&c&lTop Kills Leaderboard")));
-//
-//		// Option to modify total gems leaderboard
-//		inv.setItem(2, Utils.createItem(Material.EMERALD_BLOCK, Utils.format("&2&lTotal Gems Leaderboard")));
-//
-//		// Option to modify top balance leaderboard
-//		inv.setItem(3, Utils.createItem(Material.EMERALD, Utils.format("&a&lTop Balance Leaderboard")));
-//
-//		// Option to modify top wave leaderboard
-//		inv.setItem(4, Utils.createItem(Material.GOLDEN_SWORD, Utils.format("&9&lTop Wave Leaderboard"),
-//				Utils.BUTTON_FLAGS, null));
-//
-//		// Option to exit
-//		inv.setItem(8, InventoryItems.exit());
-//
-//		return inv;
-//	}
-//
-//	// Menu for editing the total kills leaderboard
-//	public static Inventory createTotalKillsLeaderboardInventory(Main plugin) {
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
-//				Utils.format("&4&lTotal Kills Leaderboard"));
-//
-//		// Option to create or relocate the leaderboard
-//		if (Utils.getConfigLocation(plugin, "leaderboard.totalKills") == null)
-//			inv.setItem(0, InventoryItems.create("Leaderboard"));
-//		else inv.setItem(0, InventoryItems.relocate("Leaderboard"));
-//
-//		// Option to teleport to the leaderboard
-//		inv.setItem(2, InventoryItems.teleport("Leaderboard"));
-//
-//		// Option to center the leaderboard
-//		inv.setItem(4, InventoryItems.center("Leaderboard"));
-//
-//		// Option to remove the leaderboard
-//		inv.setItem(6, InventoryItems.remove("LEADERBOARD"));
-//
-//		// Option to exit
-//		inv.setItem(8, InventoryItems.exit());
-//
-//		return inv;
-//	}
-//
-//	// Menu for editing the top kills leaderboard
-//	public static Inventory createTopKillsLeaderboardInventory(Main plugin) {
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
-//				Utils.format("&c&lTop Kills Leaderboard"));
-//
-//		// Option to create or relocate the leaderboard
-//		if (Utils.getConfigLocation(plugin, "leaderboard.topKills") == null)
-//			inv.setItem(0, InventoryItems.create("Leaderboard"));
-//		else inv.setItem(0, InventoryItems.relocate("Leaderboard"));
-//
-//		// Option to teleport to the leaderboard
-//		inv.setItem(2, InventoryItems.teleport("Leaderboard"));
-//
-//		// Option to center the leaderboard
-//		inv.setItem(4, InventoryItems.center("Leaderboard"));
-//
-//		// Option to remove the leaderboard
-//		inv.setItem(6, InventoryItems.remove("LEADERBOARD"));
-//
-//		// Option to exit
-//		inv.setItem(8, InventoryItems.exit());
-//
-//		return inv;
-//	}
-//
-//	// Menu for editing the total gems leaderboard
-//	public static Inventory createTotalGemsLeaderboardInventory(Main plugin) {
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
-//				Utils.format("&2&lTotal Gems Leaderboard"));
-//
-//		// Option to create or relocate the leaderboard
-//		if (Utils.getConfigLocation(plugin, "leaderboard.totalGems") == null)
-//			inv.setItem(0, InventoryItems.create("Leaderboard"));
-//		else inv.setItem(0, InventoryItems.relocate("Leaderboard"));
-//
-//		// Option to teleport to the leaderboard
-//		inv.setItem(2, InventoryItems.teleport("Leaderboard"));
-//
-//		// Option to center the leaderboard
-//		inv.setItem(4, InventoryItems.center("Leaderboard"));
-//
-//		// Option to remove the leaderboard
-//		inv.setItem(6, InventoryItems.remove("LEADERBOARD"));
-//
-//		// Option to exit
-//		inv.setItem(8, InventoryItems.exit());
-//
-//		return inv;
-//	}
-//
-//	// Menu for editing the top balance leaderboard
-//	public static Inventory createTopBalanceLeaderboardInventory(Main plugin) {
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
-//				Utils.format("&a&lTop Balance Leaderboard"));
-//
-//		// Option to create or relocate the leaderboard
-//		if (Utils.getConfigLocation(plugin, "leaderboard.topBalance") == null)
-//			inv.setItem(0, InventoryItems.create("Leaderboard"));
-//		else inv.setItem(0, InventoryItems.relocate("Leaderboard"));
-//
-//		// Option to teleport to the leaderboard
-//		inv.setItem(2, InventoryItems.teleport("Leaderboard"));
-//
-//		// Option to center the leaderboard
-//		inv.setItem(4, InventoryItems.center("Leaderboard"));
-//
-//		// Option to remove the leaderboard
-//		inv.setItem(6, InventoryItems.remove("LEADERBOARD"));
-//
-//		// Option to exit
-//		inv.setItem(8, InventoryItems.exit());
-//
-//		return inv;
-//	}
-//
-//	// Menu for editing the top wave leaderboard
-//	public static Inventory createTopWaveLeaderboardInventory(Main plugin) {
-//		// Create inventory
-//		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
-//				Utils.format("&9&lTop Wave Leaderboard"));
-//
-//		// Option to create or relocate the leaderboard
-//		if (Utils.getConfigLocation(plugin, "leaderboard.topWave") == null)
-//			inv.setItem(0, InventoryItems.create("Leaderboard"));
-//		else inv.setItem(0, InventoryItems.relocate("Leaderboard"));
-//
-//		// Option to teleport to the leaderboard
-//		inv.setItem(2, InventoryItems.teleport("Leaderboard"));
-//
-//		// Option to center the leaderboard
-//		inv.setItem(4, InventoryItems.center("Leaderboard"));
-//
-//		// Option to remove the leaderboard
-//		inv.setItem(6, InventoryItems.remove("LEADERBOARD"));
-//
-//		// Option to exit
-//		inv.setItem(8, InventoryItems.exit());
-//
-//		return inv;
-//	}
-//
-//	// Confirmation menu for total kills leaderboard
-//	public static Inventory createTotalKillsConfirmInventory() {
-//		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
-//				Utils.format("&4&lRemove Total Kills Leaderboard?"));
-//
-//		// "No" option
-//		inv.setItem(0, InventoryItems.no());
-//
-//		// "Yes" option
-//		inv.setItem(8, InventoryItems.yes());
-//
-//		return inv;
-//	}
-//
-//	// Confirmation menu for top kills leaderboard
-//	public static Inventory createTopKillsConfirmInventory() {
-//		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
-//				Utils.format("&4&lRemove Top Kills Leaderboard?"));
-//
-//		// "No" option
-//		inv.setItem(0, InventoryItems.no());
-//
-//		// "Yes" option
-//		inv.setItem(8, InventoryItems.yes());
-//
-//		return inv;
-//	}
-//
-//	// Confirmation menu for total gems leaderboard
-//	public static Inventory createTotalGemsConfirmInventory() {
-//		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
-//				Utils.format("&4&lRemove Total Gems Leaderboard?"));
-//
-//		// "No" option
-//		inv.setItem(0, InventoryItems.no());
-//
-//		// "Yes" option
-//		inv.setItem(8, InventoryItems.yes());
-//
-//		return inv;
-//	}
-//
-//	// Confirmation menu for top balance leaderboard
-//	public static Inventory createTopBalanceConfirmInventory() {
-//		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
-//				Utils.format("&4&lRemove Top Balance Leaderboard?"));
-//
-//		// "No" option
-//		inv.setItem(0, InventoryItems.no());
-//
-//		// "Yes" option
-//		inv.setItem(8, InventoryItems.yes());
-//
-//		return inv;
-//	}
-//
-//	// Confirmation menu for top wave leaderboard
-//	public static Inventory createTopWaveConfirmInventory() {
-//		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
-//				Utils.format("&4&lRemove Top Wave Leaderboard?"));
-//
-//		// "No" option
-//		inv.setItem(0, InventoryItems.no());
-//
-//		// "Yes" option
-//		inv.setItem(8, InventoryItems.yes());
-//
-//		return inv;
-//	}
+	// Menu for leaderboards
+	public static Inventory createLeaderboardInventory() {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
+				Utils.format("&e&lLeaderboards"));
+
+		// Option to modify total presents leaderboard
+		inv.setItem(0, Utils.rename(Presents.GOLD_PRESENT, Utils.format("&4&lTotal Presents Leaderboard")));
+
+		// Option to modify top presents leaderboard
+		inv.setItem(2, Utils.rename(Presents.COPPER_PRESENT, Utils.format("&c&lTop Presents Leaderboard")));
+
+		// Option to modify total happiness leaderboard
+		inv.setItem(4, Utils.createItem(Material.HONEY_BLOCK, Utils.format("&5&lTotal Happiness Leaderboard")));
+
+		// Option to modify top happiness leaderboard
+		inv.setItem(6, Utils.createItem(Material.HONEY_BOTTLE, Utils.format("&d&lTop Happiness Leaderboard")));
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Menu for editing the total presents leaderboard
+	public static Inventory createTotalPresentsLeaderboardInventory(Main plugin) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
+				Utils.format("&4&lTotal Presents Leaderboard"));
+
+		// Option to create or relocate the leaderboard
+		if (Utils.getConfigLocation(plugin, "leaderboard.totalPresents") == null)
+			inv.setItem(0, InventoryItems.create("Leaderboard"));
+		else inv.setItem(0, InventoryItems.relocate("Leaderboard"));
+
+		// Option to teleport to the leaderboard
+		inv.setItem(2, InventoryItems.teleport("Leaderboard"));
+
+		// Option to center the leaderboard
+		inv.setItem(4, InventoryItems.center("Leaderboard"));
+
+		// Option to remove the leaderboard
+		inv.setItem(6, InventoryItems.remove("LEADERBOARD"));
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Menu for editing the top presents leaderboard
+	public static Inventory createTopPresentsLeaderboardInventory(Main plugin) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
+				Utils.format("&c&lTop Presents Leaderboard"));
+
+		// Option to create or relocate the leaderboard
+		if (Utils.getConfigLocation(plugin, "leaderboard.topPresents") == null)
+			inv.setItem(0, InventoryItems.create("Leaderboard"));
+		else inv.setItem(0, InventoryItems.relocate("Leaderboard"));
+
+		// Option to teleport to the leaderboard
+		inv.setItem(2, InventoryItems.teleport("Leaderboard"));
+
+		// Option to center the leaderboard
+		inv.setItem(4, InventoryItems.center("Leaderboard"));
+
+		// Option to remove the leaderboard
+		inv.setItem(6, InventoryItems.remove("LEADERBOARD"));
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Menu for editing the total happiness leaderboard
+	public static Inventory createTotalHappinessLeaderboardInventory(Main plugin) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
+				Utils.format("&5&lTotal Happiness Leaderboard"));
+
+		// Option to create or relocate the leaderboard
+		if (Utils.getConfigLocation(plugin, "leaderboard.totalHappiness") == null)
+			inv.setItem(0, InventoryItems.create("Leaderboard"));
+		else inv.setItem(0, InventoryItems.relocate("Leaderboard"));
+
+		// Option to teleport to the leaderboard
+		inv.setItem(2, InventoryItems.teleport("Leaderboard"));
+
+		// Option to center the leaderboard
+		inv.setItem(4, InventoryItems.center("Leaderboard"));
+
+		// Option to remove the leaderboard
+		inv.setItem(6, InventoryItems.remove("LEADERBOARD"));
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Menu for editing the top happiness leaderboard
+	public static Inventory createTopHappinessLeaderboardInventory(Main plugin) {
+		// Create inventory
+		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
+				Utils.format("&d&lTop Happiness Leaderboard"));
+
+		// Option to create or relocate the leaderboard
+		if (Utils.getConfigLocation(plugin, "leaderboard.topHappiness") == null)
+			inv.setItem(0, InventoryItems.create("Leaderboard"));
+		else inv.setItem(0, InventoryItems.relocate("Leaderboard"));
+
+		// Option to teleport to the leaderboard
+		inv.setItem(2, InventoryItems.teleport("Leaderboard"));
+
+		// Option to center the leaderboard
+		inv.setItem(4, InventoryItems.center("Leaderboard"));
+
+		// Option to remove the leaderboard
+		inv.setItem(6, InventoryItems.remove("LEADERBOARD"));
+
+		// Option to exit
+		inv.setItem(8, InventoryItems.exit());
+
+		return inv;
+	}
+
+	// Confirmation menu for total presents leaderboard
+	public static Inventory createTotalPresentsConfirmInventory() {
+		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
+				Utils.format("&4&lRemove Total Presents Leaderboard?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
+
+	// Confirmation menu for top presents leaderboard
+	public static Inventory createTopPresentsConfirmInventory() {
+		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
+				Utils.format("&4&lRemove Top Presents Leaderboard?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
+
+	// Confirmation menu for total happiness leaderboard
+	public static Inventory createTotalHappinessConfirmInventory() {
+		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
+				Utils.format("&4&lRemove Total Happiness Leaderboard?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
+
+	// Confirmation menu for top balance leaderboard
+	public static Inventory createTopHappinessConfirmInventory() {
+		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
+				Utils.format("&4&lRemove Top Happiness Leaderboard?"));
+
+		// "No" option
+		inv.setItem(0, InventoryItems.no());
+
+		// "Yes" option
+		inv.setItem(8, InventoryItems.yes());
+
+		return inv;
+	}
 
 	// Menu for editing an arena
 	public static Inventory createArenaInventory(int arena) {
@@ -1109,34 +1065,22 @@ public class Inventories {
 		Inventory inv = Bukkit.createInventory(null, 9, Utils.format("&k") +
 				Utils.format("&2&l" + name + "'s Stats"));
 
-		// Total kills
-		inv.setItem(0, Utils.createItem(Material.DRAGON_HEAD, Utils.format("&4&lTotal Kills: &4" +
-				playerData.getInt(name + ".totalKills")), Utils.format("&7Lifetime kill count")));
+		// Total presents
+		inv.setItem(0, Utils.createItem(Material.DRAGON_HEAD, Utils.format("&4&lTotal Presents: &4" +
+				playerData.getInt(name + ".totalPresents")), Utils.format("&7Lifetime present count")));
 
-		// Top kills
-		inv.setItem(1, Utils.createItem(Material.ZOMBIE_HEAD, Utils.format("&c&lTop Kills: &c" +
-				playerData.getInt(name + ".topKills")), Utils.format("&7Most kills in a game")));
+		// Top presents
+		inv.setItem(1, Utils.createItem(Material.ZOMBIE_HEAD, Utils.format("&c&lTop Presents: &c" +
+				playerData.getInt(name + ".topPresents")), Utils.format("&7Most presents in a game")));
 
-		// Total gems
-		inv.setItem(2, Utils.createItem(Material.EMERALD_BLOCK, Utils.format("&2&lTotal Gems: &2" +
-				playerData.getInt(name + ".totalGems")), Utils.format("&7Lifetime gems collected")));
+		// Total happiness
+		inv.setItem(2, Utils.createItem(Material.EMERALD_BLOCK, Utils.format("&5&lTotal Happiness: &2" +
+				playerData.getInt(name + ".totalHappiness")), Utils.format("&7Lifetime happiness collected")));
 
 		// Top balance
-		inv.setItem(3, Utils.createItem(Material.EMERALD, Utils.format("&a&lTop Balance: &a" +
-				playerData.getInt(name + ".topBalance")),
-				Utils.format("&7Highest gem balance in a game")));
-
-		// Top wave
-		inv.setItem(4, Utils.createItem(Material.GOLDEN_SWORD, Utils.format("&3&lTop Wave: &3" +
-				playerData.getInt(name + ".topWave")), Utils.BUTTON_FLAGS, null,
-				Utils.format("&7Highest completed wave")));
-
-		// Kits
-		inv.setItem(6, Utils.createItem(Material.ENDER_CHEST, Utils.format("&9&lKits")));
-
-		// Crystal balance
-		inv.setItem(8, Utils.createItem(Material.DIAMOND, Utils.format("&b&lCrystal Balance: &b" +
-				playerData.getInt(name + ".crystalBalance"))));
+		inv.setItem(3, Utils.createItem(Material.EMERALD, Utils.format("&d&lTop Happiness: &a" +
+				playerData.getInt(name + ".topHappiness")),
+				Utils.format("&7Highest happiness in a game")));
 
 		return inv;
 	}

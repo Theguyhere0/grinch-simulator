@@ -6,6 +6,7 @@ import me.theguyhere.grinchsimulator.events.*;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
+import me.theguyhere.grinchsimulator.game.models.arenas.ArenaRecord;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaStatus;
 import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
 import me.theguyhere.grinchsimulator.tools.Utils;
@@ -246,18 +247,6 @@ public class ArenaListener implements Listener {
         if (arena.getWaitingSound() != null)
             player.stopSound(arena.getWaitingSound());
 
-        FileConfiguration playerData = plugin.getPlayerData();
-
-//        // Update player stats
-//        playerData.set(player.getName() + ".totalKills",
-//                playerData.getInt(player.getName() + ".totalKills") + gamer.getKills());
-//        if (playerData.getInt(player.getName() + ".topKills") < gamer.getKills())
-//            playerData.set(player.getName() + ".topKills", gamer.getKills());
-//        plugin.savePlayerData();
-//
-//        // Refresh leaderboards
-//        plugin.getGame().refreshLeaderboards();
-
         // Remove the player from the arena and time limit bar if exists
         arena.getPlayers().remove(gamer);
         if (arena.getTimeLimitBar() != null)
@@ -374,17 +363,6 @@ public class ArenaListener implements Listener {
                 vdPlayer.getPlayer().playSound(arena.getPlayerSpawn(),
                         Sound.ENTITY_ENDER_DRAGON_DEATH, 10, .5f);
             }
-        }
-
-        if (arena.getPlayers().size() > 0) {
-//            // Check for record
-//            if (arena.checkNewRecord(new ArenaRecord(arena.getCurrentWave() - 1, arena.getActives().stream()
-//                    .map(vdPlayer -> vdPlayer.getPlayer().getName()).collect(Collectors.toList())))) {
-//                arena.getPlayers().forEach(player -> player.getPlayer().sendTitle(
-//                        Utils.format(language.getString("record")), null, Utils.secondsToTicks(.5),
-//                        Utils.secondsToTicks(3.5), Utils.secondsToTicks(1)));
-//                arena.refreshArenaBoard();
-//            }
         }
 
         Tasks task = arena.getTask();

@@ -308,7 +308,7 @@ public class ArenaManager {
 	 * Refresh the arena board of every arena.
 	 */
 	public static void refreshArenaBoards() {
-		Arrays.stream(arenas).filter(Objects::nonNull).forEach(Arena::refreshArenaBoard);
+		Arrays.stream(arenas).filter(Objects::nonNull).forEach(Arena::refreshArenaBoards);
 	}
 
 	/**

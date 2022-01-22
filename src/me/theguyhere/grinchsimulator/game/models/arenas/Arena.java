@@ -2,6 +2,7 @@ package me.theguyhere.grinchsimulator.game.models.arenas;
 
 import me.theguyhere.grinchsimulator.GUI.Inventories;
 import me.theguyhere.grinchsimulator.Main;
+import me.theguyhere.grinchsimulator.events.GameEndEvent;
 import me.theguyhere.grinchsimulator.exceptions.InvalidNameException;
 import me.theguyhere.grinchsimulator.exceptions.PlayerNotFoundException;
 import me.theguyhere.grinchsimulator.game.displays.ArenaBoard;
@@ -55,6 +56,8 @@ public class Arena {
     private final List<Location> found = new ArrayList<>();
     /** ID of task managing present particles.*/
     private int presentParticlesID = 0;
+    /** A que of records to be checked after a game ends.*/
+    private final Queue<ArenaRecord> recordQueue = new ArrayDeque<>();
 
     public Arena(Main plugin, int arena, Tasks task) {
         this.plugin = plugin;
@@ -63,7 +66,7 @@ public class Arena {
         path = "a" + arena;
         this.task = task;
         status = ArenaStatus.WAITING;
-        refreshArenaBoard();
+        refreshArenaBoards();
         refreshPortal();
     }
 
@@ -226,14 +229,22 @@ public class Arena {
             playerData.set(player.getName() + ".topHappiness", gamer.getHappiness());
         plugin.savePlayerData();
 
-        // Check for arena record
-        checkNewRecord(new ArenaRecord(gamer.getPresents(), player.getName(), ArenaRecordType.PRESENTS));
-        checkNewRecord(new ArenaRecord(gamer.getHappiness(), player.getName(), ArenaRecordType.HAPPINESS));
+        // Add to record queue
+        addRecordUniquely(new ArenaRecord(gamer.getPresents(), player.getName(),
+                ArenaRecordType.PRESENTS));
+        addRecordUniquely(new ArenaRecord(gamer.getHappiness(), player.getName(),
+                ArenaRecordType.HAPPINESS));
 
         // Refresh leaderboards
         plugin.getArenaManager().refreshLeaderboards();
 
+        // Refresh player scoreboards
         players.forEach(ArenaManager::createBoard);
+
+        // Check if game ended
+        if (getPresentsLeft() < 1)
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
+                    Bukkit.getPluginManager().callEvent(new GameEndEvent(this)));
     }
 
     public boolean checkFound(Location location) {
@@ -341,6 +352,25 @@ public class Arena {
                                     .filter(loc -> !checkFound(loc)).toList().size());
                 });
         return left.get();
+    }
+
+    private void addRecordUniquely(ArenaRecord recordCandidate) {
+        try {
+            recordQueue.remove(recordQueue.stream()
+                    .filter(Objects::nonNull)
+                    .filter(record -> record.getPlayer().equals(recordCandidate.getPlayer()))
+                    .filter(record -> record.getType() == recordCandidate.getType()).toList().get(0));
+        } catch (Exception ignored) {
+        }
+
+        recordQueue.add(recordCandidate);
+    }
+
+    public void checkRecords() {
+        for (ArenaRecord record : recordQueue)
+            checkNewRecord(record);
+        recordQueue.clear();
+        refreshArenaBoards();
     }
 
     /**
@@ -607,13 +637,13 @@ public class Arena {
             Utils.setConfigurationLocation(plugin, path + ".happyLeaders", location);
 
         // Recreate the board
-        refreshArenaBoard();
+        refreshArenaBoards();
     }
 
     /**
      * Recreates the arena leaderboards in game based on the location in the arena file.
      */
-    public void refreshArenaBoard() {
+    public void refreshArenaBoards() {
         // Try recreating the present leaderboard
         try {
             // Delete old board if needed
@@ -663,7 +693,7 @@ public class Arena {
             Utils.centerConfigLocation(plugin, path + ".happyLeaders");
 
         // Recreate the board
-        refreshArenaBoard();
+        refreshArenaBoards();
     }
 
     /**

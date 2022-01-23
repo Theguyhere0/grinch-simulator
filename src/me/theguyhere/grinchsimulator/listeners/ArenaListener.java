@@ -373,8 +373,8 @@ public class ArenaListener implements Listener {
             Bukkit.getScheduler().cancelTask(tasks.get(task.updateBar));
             tasks.remove(task.updateBar);
             arena.removeTimeLimitBar();
-            arena.cancelPresentParticles();
             arena.checkRecords();
+            arena.returnPresents();
         }
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
                 Bukkit.getPluginManager().callEvent(new ArenaResetEvent(arena)), Utils.secondsToTicks(10));

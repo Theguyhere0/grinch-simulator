@@ -11,7 +11,6 @@ import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
 import me.theguyhere.grinchsimulator.tools.Utils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -93,13 +92,6 @@ public class GameListener implements Listener {
 				// Check for arena in session
 				if (arena.getStatus() != ArenaStatus.ACTIVE)
 					return;
-
-				// Check if already found
-				if (arena.checkFound(blockLocation)) {
-					// Todo
-					player.sendMessage(Utils.notify("&cPresent already found!"));
-					return;
-				}
 
 				// Find and update stats
 				arena.findPresent(player, blockLocation);

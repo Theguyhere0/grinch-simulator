@@ -1,5 +1,6 @@
 package me.theguyhere.grinchsimulator.game.models.arenas;
 
+import com.mojang.authlib.GameProfile;
 import me.theguyhere.grinchsimulator.GUI.Inventories;
 import me.theguyhere.grinchsimulator.Main;
 import me.theguyhere.grinchsimulator.events.GameEndEvent;
@@ -10,8 +11,14 @@ import me.theguyhere.grinchsimulator.game.displays.Portal;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
 import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
+import me.theguyhere.grinchsimulator.game.models.presents.Presents;
 import me.theguyhere.grinchsimulator.tools.Utils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.block.Skull;
+import org.bukkit.block.data.Rotatable;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -19,7 +26,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -54,8 +63,6 @@ public class Arena {
     private final List<Player> editors = new ArrayList<>();
     /** A list of states of hidden presents.*/
     private final List<Location> found = new ArrayList<>();
-    /** ID of task managing present particles.*/
-    private int presentParticlesID = 0;
     /** A que of records to be checked after a game ends.*/
     private final Queue<ArenaRecord> recordQueue = new ArrayDeque<>();
 
@@ -68,6 +75,7 @@ public class Arena {
         status = ArenaStatus.WAITING;
         refreshArenaBoards();
         refreshPortal();
+        returnPresents();
     }
 
     public int getArena() {
@@ -148,34 +156,51 @@ public class Arena {
         return config.getInt(path + ".min");
     }
 
-    public void startPresentParticles() {
-        if (presentParticlesID != 0)
-            return;
+    public void returnPresents() {
+        Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents"))
+                .getKeys(false).forEach(type -> Utils.getConfigLocationList(plugin, path + ".presents." + type)
+                        .forEach(loc -> {
+                            // Change material
+                            loc.getBlock().setType(Material.PLAYER_HEAD);
 
-        presentParticlesID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-            try {
-                found.forEach(location -> Objects.requireNonNull(location.getWorld())
-                        .spawnParticle(Particle.BARRIER, location.clone().add(.5, .25, .5), 1));
-            } catch (Exception e) {
-                Utils.debugError(String.format("Present particle generation error for arena %d.", arena),
-                        2);
-            }
-        }, 0 , 80);
-    }
+                            // Set present orientation
+                            Rotatable data = (Rotatable) loc.getBlock().getBlockData();
+                            data.setRotation(Presents.getRotation(loc.getYaw()));
+                            loc.getBlock().setBlockData(data);
 
-    public void cancelPresentParticles() {
-        if (presentParticlesID != 0)
-            Bukkit.getScheduler().cancelTask(presentParticlesID);
-        presentParticlesID = 0;
+                            // Get present skin
+                            ItemStack present = Presents.getByType(PresentType.valueOf(type.toUpperCase()));
+                            assert present != null;
+                            SkullMeta meta = ((SkullMeta) present.getItemMeta());
+                            GameProfile profile;
+                            Field profileField;
+                            try {
+                                assert meta != null;
+                                profileField = meta.getClass().getDeclaredField("profile");
+                                profileField.setAccessible(true);
+                                profile = (GameProfile) profileField.get(meta);
+                            } catch (Exception e) {
+                                return;
+                            }
+
+                            // Apply skin
+                            Skull state = (Skull) loc.getBlock().getState();
+                            Field anotherProfileField;
+                            try {
+                                anotherProfileField = state.getClass().getDeclaredField("profile");
+                                anotherProfileField.setAccessible(true);
+                                anotherProfileField.set(state, profile);
+                            } catch (Exception e) {
+                                return;
+                            }
+                            state.update();
+                        }));
     }
 
     public void addPresent(PresentType type, Location location) {
         List<Location> newList = getPresents(type);
-        if (newList == null)
-            newList = new ArrayList<>();
         newList.add(location);
-        plugin.getArenaData().set(path + ".presents." + type.label, newList);
-        plugin.saveArenaData();
+        Utils.setConfigLocationList(plugin, path + ".presents." + type.label, newList);
     }
 
     public boolean checkPresent(Location location) {
@@ -194,6 +219,7 @@ public class Arena {
 
     public void findPresent(Player player, Location location) {
         GPlayer gamer;
+
         // Make sure player is a gamer
         try {
             gamer = getPlayer(player);
@@ -203,8 +229,7 @@ public class Arena {
 
         // Mark present as found
         found.add(location.clone());
-        Objects.requireNonNull(location.getWorld()).spawnParticle(Particle.BARRIER,
-                location.clone().add(.5, .25, .5), 1);
+        location.getBlock().setType(Material.AIR);
 
         // Update player stats
         PresentType presentType = PresentType.valueOf(Objects.requireNonNull(plugin.getArenaData()
@@ -245,10 +270,6 @@ public class Arena {
         if (getPresentsLeft() < 1)
             Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
                     Bukkit.getPluginManager().callEvent(new GameEndEvent(this)));
-    }
-
-    public boolean checkFound(Location location) {
-        return found.contains(location);
     }
 
     public void resetPresents() {
@@ -347,9 +368,8 @@ public class Arena {
         Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents")).getKeys(false)
                 .forEach(type -> {
                     int multiplier = getPresentValue(PresentType.valueOf(type.toUpperCase()));
-                    left.addAndGet(multiplier *
-                            Utils.getConfigLocationList(plugin, path + ".presents." + type).stream()
-                                    .filter(loc -> !checkFound(loc)).toList().size());
+                    left.addAndGet(multiplier * Utils.getConfigLocationList(plugin, path + ".presents." + type)
+                            .stream().toList().size());
                 });
         return left.get();
     }

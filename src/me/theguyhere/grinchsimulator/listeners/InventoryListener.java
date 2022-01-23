@@ -1320,9 +1320,16 @@ public class InventoryListener implements Listener {
 			Arena arenaInstance = ArenaManager.getArena(meta.getInteger1());
 
 			// Edit value of a specific present type
-			if (buttonName.contains("Presents"))
+			if (buttonName.contains("Presents")) {
+				// Check for arena closure
+				if (!arenaInstance.isClosed()) {
+					player.sendMessage(Utils.notify("&cArena must be closed to modify this!"));
+					return;
+				}
+
 				player.openInventory(Inventories.createPresentValueMenu(meta.getInteger1(),
 						PresentType.valueOf(buttonName.substring(4, buttonName.indexOf(" ")).toUpperCase())));
+			}
 
 			// Reset all values
 			else if (buttonName.contains("Reset Values")) {

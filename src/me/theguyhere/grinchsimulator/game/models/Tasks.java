@@ -149,9 +149,8 @@ public class Tasks {
 		public void run() {
 			Arena arenaInstance = ArenaManager.getArena(arena);
 
-			// Set arena to active, set new game ID
+			// Set arena to active
 			arenaInstance.setStatus(ArenaStatus.ACTIVE);
-			arenaInstance.newGameID();
 
 			// Teleport players to arena if waiting room exists
 			if (arenaInstance.getWaitingRoom() != null) {
@@ -164,18 +163,6 @@ public class Tasks {
 			if (arenaInstance.getWaitingSound() != null)
 				arenaInstance.getPlayers().forEach(player ->
 						player.getPlayer().stopSound(arenaInstance.getWaitingSound()));
-
-			// Start present particles
-			arenaInstance.startPresentParticles();
-
-//			arenaInstance.getActives().forEach(player -> {
-//				// Give all players starting items
-//				giveItems(player);
-//
-//				// Give admins items or events to test with
-//				if (Main.getDebugLevel() >= 3 && player.getPlayer().hasPermission("vd.admin")) {
-//				}
-//			});
 
 			// Trigger GameStartEvent
 			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
@@ -205,6 +192,7 @@ public class Tasks {
 
 			// Reset presents
 			arenaInstance.resetPresents();
+			arenaInstance.returnPresents();
 
 			// Debug message to console
 			Utils.debugInfo("Arena " + arena + " is resetting.", 2);
@@ -272,27 +260,4 @@ public class Tasks {
 			}
 		}
 	};
-
-//	// Gives items on spawn or respawn based on kit selected
-//	public void giveItems(GPlayer player) {
-//		for (ItemStack item: player.getKit().getItems()) {
-//			EntityEquipment equipment = player.getPlayer().getEquipment();
-//
-//			// Equip armor if possible, otherwise put in inventory, otherwise drop at feet
-//			if (Arrays.stream(GameItems.HELMET_MATERIALS).anyMatch(mat -> mat == item.getType()) &&
-//					Objects.requireNonNull(equipment).getHelmet() == null)
-//				equipment.setHelmet(item);
-//			else if (Arrays.stream(GameItems.CHESTPLATE_MATERIALS).anyMatch(mat -> mat == item.getType()) &&
-//					Objects.requireNonNull(equipment).getChestplate() == null)
-//				equipment.setChestplate(item);
-//			else if (Arrays.stream(GameItems.LEGGING_MATERIALS).anyMatch(mat -> mat == item.getType()) &&
-//					Objects.requireNonNull(equipment).getLeggings() == null)
-//				equipment.setLeggings(item);
-//			else if (Arrays.stream(GameItems.BOOTS_MATERIALS).anyMatch(mat -> mat == item.getType()) &&
-//					Objects.requireNonNull(equipment).getBoots() == null)
-//				equipment.setBoots(item);
-//			else Utils.giveItem(player.getPlayer(), item, plugin.getLanguageData().getString("inventoryFull"));
-//		}
-//		Utils.giveItem(player.getPlayer(), GameItems.shop(), plugin.getLanguageData().getString("inventoryFull"));
-//	}
 }

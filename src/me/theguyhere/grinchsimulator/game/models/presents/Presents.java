@@ -1,6 +1,7 @@
 package me.theguyhere.grinchsimulator.game.models.presents;
 
 import me.theguyhere.grinchsimulator.tools.Utils;
+import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
 
 public class Presents {
@@ -85,6 +86,60 @@ public class Presents {
             }
             default -> {
                 return null;
+            }
+        }
+    }
+
+    public static BlockFace getRotation(float yaw) {
+        int num = (int) ((yaw + 192) * 2 / 45);
+        switch (num) {
+            case 1 -> {
+                return BlockFace.SOUTH_SOUTH_WEST;
+            }
+            case 2 -> {
+                return BlockFace.SOUTH_WEST;
+            }
+            case 3 -> {
+                return BlockFace.WEST_SOUTH_WEST;
+            }
+            case 4 -> {
+                return BlockFace.WEST;
+            }
+            case 5 -> {
+                return BlockFace.WEST_NORTH_WEST;
+            }
+            case 6 -> {
+                return BlockFace.NORTH_WEST;
+            }
+            case 7 -> {
+                return BlockFace.NORTH_NORTH_WEST;
+            }
+            case 8 -> {
+                return BlockFace.NORTH;
+            }
+            case 9 -> {
+                return BlockFace.NORTH_NORTH_EAST;
+            }
+            case 10 -> {
+                return BlockFace.NORTH_EAST;
+            }
+            case 11 -> {
+                return BlockFace.EAST_NORTH_EAST;
+            }
+            case 12 -> {
+                return BlockFace.EAST;
+            }
+            case 13 -> {
+                return BlockFace.EAST_SOUTH_EAST;
+            }
+            case 14 -> {
+                return BlockFace.SOUTH_EAST;
+            }
+            case 15 -> {
+                return BlockFace.SOUTH_SOUTH_EAST;
+            }
+            default -> {
+                return BlockFace.SOUTH;
             }
         }
     }

@@ -1,15 +1,24 @@
 package me.theguyhere.grinchsimulator.game.models.arenas;
 
+import com.mojang.authlib.GameProfile;
 import me.theguyhere.grinchsimulator.GUI.Inventories;
 import me.theguyhere.grinchsimulator.Main;
+import me.theguyhere.grinchsimulator.events.GameEndEvent;
 import me.theguyhere.grinchsimulator.exceptions.InvalidNameException;
 import me.theguyhere.grinchsimulator.exceptions.PlayerNotFoundException;
+import me.theguyhere.grinchsimulator.game.displays.ArenaBoard;
 import me.theguyhere.grinchsimulator.game.displays.Portal;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
 import me.theguyhere.grinchsimulator.game.models.presents.PresentType;
+import me.theguyhere.grinchsimulator.game.models.presents.Presents;
 import me.theguyhere.grinchsimulator.tools.Utils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.block.Skull;
+import org.bukkit.block.data.Rotatable;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -17,12 +26,12 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.lang.reflect.Field;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * A class managing data about a Villager Defense arena.
@@ -40,22 +49,22 @@ public class Arena {
 
     /** Status of the arena.*/
     private ArenaStatus status;
-    /** The ID of the game currently in progress.*/
-    private int gameID;
     /** A list of players in the arena.*/
     private final List<GPlayer> players = new ArrayList<>();
     /** Time limit bar object.*/
     private BossBar timeLimitBar;
     /** Portal object for the arena.*/
     private Portal portal;
-//    /** Arena scoreboard object for the arena.*/
-//    private ArenaBoard arenaBoard;
+    /** Present leaderboard for the arena.*/
+    private ArenaBoard presentLeaders;
+    /** Happiness leaderboard for the arena.*/
+    private ArenaBoard happyLeaders;
     /** A list of players that are editing the map.*/
     private final List<Player> editors = new ArrayList<>();
     /** A list of states of hidden presents.*/
     private final List<Location> found = new ArrayList<>();
-    /** ID of task managing present particles.*/
-    private int presentParticlesID = 0;
+    /** A que of records to be checked after a game ends.*/
+    private final Queue<ArenaRecord> recordQueue = new ArrayDeque<>();
 
     public Arena(Main plugin, int arena, Tasks task) {
         this.plugin = plugin;
@@ -64,8 +73,9 @@ public class Arena {
         path = "a" + arena;
         this.task = task;
         status = ArenaStatus.WAITING;
-//        refreshArenaBoard();
+        refreshArenaBoards();
         refreshPortal();
+        returnPresents();
     }
 
     public int getArena() {
@@ -112,7 +122,7 @@ public class Arena {
         if (!config.contains(path + ".sounds")) {
             setWinSound(true);
             setLoseSound(true);
-            setWaveStartSound(true);
+            setStartSound(true);
             setWaitingSound(14);
         }
 
@@ -146,34 +156,54 @@ public class Arena {
         return config.getInt(path + ".min");
     }
 
-    public void startPresentParticles() {
-        if (presentParticlesID != 0)
-            return;
+    public void returnPresents() {
+        try {
+            Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents"))
+                    .getKeys(false).forEach(type -> Utils.getConfigLocationList(plugin, path + ".presents." + type)
+                            .forEach(loc -> {
+                                // Change material
+                                loc.getBlock().setType(Material.PLAYER_HEAD);
 
-        presentParticlesID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-            try {
-                found.forEach(location -> Objects.requireNonNull(location.getWorld())
-                        .spawnParticle(Particle.BARRIER, location.clone().add(.5, .25, .5), 1));
-            } catch (Exception e) {
-                Utils.debugError(String.format("Present particle generation error for arena %d.", arena),
-                        2);
-            }
-        }, 0 , 80);
-    }
+                                // Set present orientation
+                                Rotatable data = (Rotatable) loc.getBlock().getBlockData();
+                                data.setRotation(Presents.getRotation(loc.getYaw()));
+                                loc.getBlock().setBlockData(data);
 
-    public void cancelPresentParticles() {
-        if (presentParticlesID != 0)
-            Bukkit.getScheduler().cancelTask(presentParticlesID);
-        presentParticlesID = 0;
+                                // Get present skin
+                                ItemStack present = Presents.getByType(PresentType.valueOf(type.toUpperCase()));
+                                assert present != null;
+                                SkullMeta meta = ((SkullMeta) present.getItemMeta());
+                                GameProfile profile;
+                                Field profileField;
+                                try {
+                                    assert meta != null;
+                                    profileField = meta.getClass().getDeclaredField("profile");
+                                    profileField.setAccessible(true);
+                                    profile = (GameProfile) profileField.get(meta);
+                                } catch (Exception e) {
+                                    return;
+                                }
+
+                                // Apply skin
+                                Skull state = (Skull) loc.getBlock().getState();
+                                Field anotherProfileField;
+                                try {
+                                    anotherProfileField = state.getClass().getDeclaredField("profile");
+                                    anotherProfileField.setAccessible(true);
+                                    anotherProfileField.set(state, profile);
+                                } catch (Exception e) {
+                                    return;
+                                }
+                                state.update();
+                            }));
+        } catch (Exception ignored) {
+        }
     }
 
     public void addPresent(PresentType type, Location location) {
         List<Location> newList = getPresents(type);
-        if (newList == null)
-            newList = new ArrayList<>();
         newList.add(location);
-        plugin.getArenaData().set(path + ".presents." + type.label, newList);
-        plugin.saveArenaData();
+        Utils.setConfigLocationList(plugin, path + ".presents." + type.label, newList);
     }
 
     public boolean checkPresent(Location location) {
@@ -192,6 +222,7 @@ public class Arena {
 
     public void findPresent(Player player, Location location) {
         GPlayer gamer;
+
         // Make sure player is a gamer
         try {
             gamer = getPlayer(player);
@@ -201,8 +232,7 @@ public class Arena {
 
         // Mark present as found
         found.add(location.clone());
-        Objects.requireNonNull(location.getWorld()).spawnParticle(Particle.BARRIER,
-                location.clone().add(.5, .25, .5), 1);
+        location.getBlock().setType(Material.AIR);
 
         // Update player stats
         PresentType presentType = PresentType.valueOf(Objects.requireNonNull(plugin.getArenaData()
@@ -212,13 +242,37 @@ public class Arena {
                             loc.setYaw(0);
                             return loc.equals(location);
                         })).toList().get(0).toUpperCase());
+        int presentValue = getPresentValue(presentType);
         gamer.addPresents(1);
-        gamer.addHappiness(getPresentValue(presentType));
-        players.forEach(ArenaManager::createBoard);
-    }
+        gamer.addHappiness(presentValue);
 
-    public boolean checkFound(Location location) {
-        return found.contains(location);
+        FileConfiguration playerData = plugin.getPlayerData();
+        playerData.set(player.getName() + ".totalPresents",
+                playerData.getInt(player.getName() + ".totalPresents") + 1);
+        if (playerData.getInt(player.getName() + ".topPresents") < gamer.getPresents())
+            playerData.set(player.getName() + ".topPresents", gamer.getPresents());
+        playerData.set(player.getName() + ".totalHappiness",
+                playerData.getInt(player.getName() + ".totalHappiness") + presentValue);
+        if (playerData.getInt(player.getName() + ".topHappiness") < gamer.getHappiness())
+            playerData.set(player.getName() + ".topHappiness", gamer.getHappiness());
+        plugin.savePlayerData();
+
+        // Add to record queue
+        addRecordUniquely(new ArenaRecord(gamer.getPresents(), player.getName(),
+                ArenaRecordType.PRESENTS));
+        addRecordUniquely(new ArenaRecord(gamer.getHappiness(), player.getName(),
+                ArenaRecordType.HAPPINESS));
+
+        // Refresh leaderboards
+        plugin.getArenaManager().refreshLeaderboards();
+
+        // Refresh player scoreboards
+        players.forEach(ArenaManager::createBoard);
+
+        // Check if game ended
+        if (getPresentsLeft() < 1)
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
+                    Bukkit.getPluginManager().callEvent(new GameEndEvent(this)));
     }
 
     public void resetPresents() {
@@ -317,11 +371,29 @@ public class Arena {
         Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents")).getKeys(false)
                 .forEach(type -> {
                     int multiplier = getPresentValue(PresentType.valueOf(type.toUpperCase()));
-                    left.addAndGet(multiplier *
-                            Utils.getConfigLocationList(plugin, path + ".presents." + type).stream()
-                                    .filter(loc -> !checkFound(loc)).toList().size());
+                    left.addAndGet(multiplier * Utils.getConfigLocationList(plugin, path + ".presents." + type)
+                            .stream().toList().size());
                 });
         return left.get();
+    }
+
+    private void addRecordUniquely(ArenaRecord recordCandidate) {
+        try {
+            recordQueue.remove(recordQueue.stream()
+                    .filter(Objects::nonNull)
+                    .filter(record -> record.getPlayer().equals(recordCandidate.getPlayer()))
+                    .filter(record -> record.getType() == recordCandidate.getType()).toList().get(0));
+        } catch (Exception ignored) {
+        }
+
+        recordQueue.add(recordCandidate);
+    }
+
+    public void checkRecords() {
+        for (ArenaRecord record : recordQueue)
+            checkNewRecord(record);
+        recordQueue.clear();
+        refreshArenaBoards();
     }
 
     /**
@@ -559,70 +631,114 @@ public class Arena {
         checkClose();
     }
 
-//    public ArenaBoard getArenaBoard() {
-//        return arenaBoard;
-//    }
-//
-//    public Location getArenaBoardLocation() {
-//        return Utils.getConfigLocationNoPitch(plugin, path + ".arenaBoard");
-//    }
-//    
-//    /**
-//     * Creates a new arena leaderboard at the given location and deletes the old arena leaderboard.
-//     * @param location New location
-//     */
-//    public void setArenaBoard(Location location) {
-//        // Save config location
-//        Utils.setConfigurationLocation(plugin, path + ".arenaBoard", location);
-//
-//        // Recreate the board
-//        refreshArenaBoard();
-//    }
-//
-//    /**
-//     * Recreates the arena leaderboard in game based on the location in the arena file.
-//     */
-//    public void refreshArenaBoard() {
-//        // Try recreating the board
-//        try {
-//            // Delete old board if needed
-//            if (arenaBoard != null)
-//                arenaBoard.remove();
-//
-//            // Create a new board and display it
-//            arenaBoard = new ArenaBoard(
-//                    Objects.requireNonNull(Utils.getConfigLocationNoPitch(plugin, path + ".arenaBoard")),
-//                    this
-//            );
-//            arenaBoard.displayForOnline();
-//        } catch (Exception e) {
-//            Utils.debugError("Invalid location for arena board " + arena, 1);
-//            Utils.debugInfo("Arena board location data may be corrupt. If data cannot be manually corrected in " +
-//                    "arenaData.yml, please delete the arena board location data for arena " + arena + ".", 1);
-//        }
-//    }
-//
-//    /**
-//     * Centers the arena leaderboard location along the x and z axis.
-//     */
-//    public void centerArenaBoard() {
-//        // Center the location
-//        Utils.centerConfigLocation(plugin, path + ".arenaBoard");
-//
-//        // Recreate the board
-//        refreshArenaBoard();
-//    }
-//
-//    /**
-//     * Removes the arena board from the game and from the arena file.
-//     */
-//    public void removeArenaBoard() {
-//        if (arenaBoard != null) {
-//            arenaBoard.remove();
-//            arenaBoard = null;
-//        }
-//        Utils.setConfigurationLocation(plugin, path + ".arenaBoard", null);
-//    }
+    public ArenaBoard getPresentLeaders() {
+        return presentLeaders;
+    }
+
+    public ArenaBoard getHappyLeaders() {
+        return happyLeaders;
+    }
+
+    public Location getPresentLeadersLocation() {
+        return Utils.getConfigLocationNoPitch(plugin, path + ".presentLeaders");
+    }
+
+    public Location getHappyLeadersLocation() {
+        return Utils.getConfigLocationNoPitch(plugin, path + ".happyLeaders");
+    }
+
+    /**
+     * Creates a new arena leaderboard at the given location and deletes the old arena leaderboard.
+     * @param location New location
+     * @param type Arena board type
+     */
+    public void setArenaBoard(Location location, ArenaRecordType type) {
+        // Save config location
+        if (type == ArenaRecordType.PRESENTS)
+            Utils.setConfigurationLocation(plugin, path + ".presentLeaders", location);
+        else if (type == ArenaRecordType.HAPPINESS)
+            Utils.setConfigurationLocation(plugin, path + ".happyLeaders", location);
+
+        // Recreate the board
+        refreshArenaBoards();
+    }
+
+    /**
+     * Recreates the arena leaderboards in game based on the location in the arena file.
+     */
+    public void refreshArenaBoards() {
+        // Try recreating the present leaderboard
+        try {
+            // Delete old board if needed
+            if (presentLeaders != null)
+                presentLeaders.remove();
+
+            // Create a new board and display it
+            presentLeaders = new ArenaBoard(
+                    Objects.requireNonNull(Utils.getConfigLocationNoPitch(plugin, path + ".presentLeaders")),
+                    this, ArenaRecordType.PRESENTS
+            );
+            presentLeaders.displayForOnline();
+        } catch (Exception e) {
+            Utils.debugError("Invalid location for present arena board " + arena, 1);
+            Utils.debugInfo("Arena board location data may be corrupt. If data cannot be manually corrected in " +
+                    "arenaData.yml, please delete the present leaders location data for arena " + arena + ".", 1);
+        }
+
+        // Try recreating the present leaderboard
+        try {
+            // Delete old board if needed
+            if (happyLeaders != null)
+                happyLeaders.remove();
+
+            // Create a new board and display it
+            happyLeaders = new ArenaBoard(
+                    Objects.requireNonNull(Utils.getConfigLocationNoPitch(plugin, path + ".happyLeaders")),
+                    this, ArenaRecordType.HAPPINESS
+            );
+            happyLeaders.displayForOnline();
+        } catch (Exception e) {
+            Utils.debugError("Invalid location for happiness arena board " + arena, 1);
+            Utils.debugInfo("Arena board location data may be corrupt. If data cannot be manually corrected in " +
+                    "arenaData.yml, please delete the happy leaders location data for arena " + arena + ".", 1);
+        }
+    }
+
+    /**
+     * Centers the arena leaderboard location along the x and z axis.
+     * @param type Arena board type
+     */
+    public void centerArenaBoard(ArenaRecordType type) {
+        // Center the location
+        if (type == ArenaRecordType.PRESENTS)
+            Utils.centerConfigLocation(plugin, path + ".presentLeaders");
+        else if (type == ArenaRecordType.HAPPINESS)
+            Utils.centerConfigLocation(plugin, path + ".happyLeaders");
+
+        // Recreate the board
+        refreshArenaBoards();
+    }
+
+    /**
+     * Removes the arena board from the game and from the arena file.
+     * @param type Arena board type
+     */
+    public void removeArenaBoard(ArenaRecordType type) {
+        if (type == ArenaRecordType.PRESENTS) {
+            if (presentLeaders != null) {
+                presentLeaders.remove();
+                presentLeaders = null;
+            }
+            Utils.setConfigurationLocation(plugin, path + ".presentLeaders", null);
+        }
+        else if (type == ArenaRecordType.HAPPINESS) {
+            if (happyLeaders != null) {
+                happyLeaders.remove();
+                happyLeaders = null;
+            }
+            Utils.setConfigurationLocation(plugin, path + ".happyLeaders", null);
+        }
+    }
 
     public Location getPlayerSpawn() {
         return Utils.getConfigLocationNoPitch(plugin, path + ".spawn");
@@ -684,11 +800,11 @@ public class Arena {
         plugin.saveArenaData();
     }
 
-    public boolean hasWaveStartSound() {
+    public boolean hasStartSound() {
         return config.getBoolean(path + ".sounds.start");
     }
 
-    public void setWaveStartSound(boolean bool) {
+    public void setStartSound(boolean bool) {
         config.set(path + ".sounds.start", bool);
         plugin.saveArenaData();
     }
@@ -703,55 +819,85 @@ public class Arena {
         refreshPortal();
     }
 
-//    public List<ArenaRecord> getArenaRecords() {
-//        List<ArenaRecord> arenaRecords = new ArrayList<>();
-//        if (config.contains(path + ".records"))
-//            try {
-//                Objects.requireNonNull(config.getConfigurationSection(path + ".records")).getKeys(false)
-//                        .forEach(index -> arenaRecords.add(new ArenaRecord(
-//                                config.getInt(path + ".records." + index + ".wave"),
-//                                config.getStringList(path + ".records." + index + ".players")
-//                        )));
-//            } catch (Exception e) {
-//                Utils.debugError(
-//                        String.format("Attempted to retrieve arena records for arena %d but found none.", arena),
-//                        2);
-//            }
-//
-//        return arenaRecords;
-//    }
-//
-//    public List<ArenaRecord> getSortedDescendingRecords() {
-//        return getArenaRecords().stream().filter(Objects::nonNull)
-//                .sorted(Comparator.comparingInt(ArenaRecord::getWave).reversed())
-//                .collect(Collectors.toList());
-//    }
-//
-//    public boolean checkNewRecord(ArenaRecord record) {
-//        List<ArenaRecord> records = getArenaRecords();
-//
-//        // Automatic record
-//        if (records.size() < 4)
-//            records.add(record);
-//
-//        // New record
-//        else if (records.stream().filter(Objects::nonNull)
-//                .anyMatch(arenaRecord -> arenaRecord.getWave() < record.getWave())) {
-//            records.sort(Comparator.comparingInt(ArenaRecord::getWave));
-//            records.set(0, record);
-//        }
-//
-//        // No record
-//        else return false;
-//
-//        // Save data
-//        for (int i = 0; i < records.size(); i++) {
-//            config.set(path + ".records." + i + ".wave", records.get(i).getWave());
-//            config.set(path + ".records." + i + ".players", records.get(i).getPlayers());
-//        }
-//        plugin.saveArenaData();
-//        return true;
-//    }
+    public List<ArenaRecord> getArenaRecords(ArenaRecordType type) {
+        List<ArenaRecord> records = new ArrayList<>();
+
+        // Get present records
+        if (type == ArenaRecordType.PRESENTS) {
+            if (config.contains(path + ".presentRecords"))
+                try {
+                    Objects.requireNonNull(config.getConfigurationSection(path + ".presentRecords")).getKeys(false)
+                            .forEach(index -> records.add(new ArenaRecord(
+                                    config.getInt(path + ".presentRecords." + index + ".value"),
+                                    config.getString(path + ".presentRecords." + index + ".player"),
+                                    ArenaRecordType.PRESENTS
+                            )));
+                } catch (Exception e) {
+                    Utils.debugError(
+                            String.format("Attempted to retrieve arena records for arena %d but found none.", arena),
+                            2);
+                }
+        }
+
+        // Get happiness records
+        else if (type == ArenaRecordType.HAPPINESS) {
+            if (config.contains(path + ".happyRecords"))
+                try {
+                    Objects.requireNonNull(config.getConfigurationSection(path + ".happyRecords")).getKeys(false)
+                            .forEach(index -> records.add(new ArenaRecord(
+                                    config.getInt(path + ".happyRecords." + index + ".value"),
+                                    config.getString(path + ".happyRecords." + index + ".player"),
+                                    ArenaRecordType.PRESENTS
+                            )));
+                } catch (Exception e) {
+                    Utils.debugError(
+                            String.format("Attempted to retrieve arena records for arena %d but found none.", arena),
+                            2);
+                }
+
+        }
+
+        return records;
+    }
+
+    public List<ArenaRecord> getSortedDescendingRecords(ArenaRecordType type) {
+        return getArenaRecords(type).stream().filter(Objects::nonNull)
+                .sorted(Comparator.comparingInt(ArenaRecord::getValue).reversed())
+                .collect(Collectors.toList());
+    }
+
+    public boolean checkNewRecord(ArenaRecord record) {
+        List<ArenaRecord> records = getArenaRecords(record.getType());
+
+        // Automatic record
+        if (records.size() < 5)
+            records.add(record);
+
+        // New record
+        else if (records.stream().filter(Objects::nonNull)
+                .anyMatch(arenaRecord -> arenaRecord.getValue() < record.getValue())) {
+            records.sort(Comparator.comparingInt(ArenaRecord::getValue));
+            records.set(0, record);
+        }
+
+        // No record
+        else return false;
+
+        // Save data
+        if (record.getType() == ArenaRecordType.PRESENTS) {
+            for (int i = 0; i < records.size(); i++) {
+                config.set(path + ".presentRecords." + i + ".value", records.get(i).getValue());
+                config.set(path + ".presentRecords." + i + ".player", records.get(i).getPlayer());
+            }
+        } else if (record.getType() == ArenaRecordType.HAPPINESS) {
+            for (int i = 0; i < records.size(); i++) {
+                config.set(path + ".happyRecords." + i + ".value", records.get(i).getValue());
+                config.set(path + ".happyRecords." + i + ".player", records.get(i).getPlayer());
+            }
+        }
+        plugin.saveArenaData();
+        return true;
+    }
 
     public Tasks getTask() {
         return task;
@@ -764,14 +910,6 @@ public class Arena {
     public void setStatus(ArenaStatus status) {
         this.status = status;
         refreshPortal();
-    }
-
-    public int getGameID() {
-        return gameID;
-    }
-
-    public void newGameID() {
-        gameID = (int) (100 * Math.random());
     }
 
     /**
@@ -929,7 +1067,7 @@ public class Arena {
         setTimeLimit(arenaToCopy.getTimeLimit());
         setWinSound(arenaToCopy.hasWinSound());
         setLoseSound(arenaToCopy.hasLoseSound());
-        setWaveStartSound(arenaToCopy.hasWaveStartSound());
+        setStartSound(arenaToCopy.hasStartSound());
         setWaitingSound(arenaToCopy.getWaitingSoundNum());
         if (config.contains("a" + arenaToCopy.getArena() + ".customShop"))
             try {
@@ -953,7 +1091,8 @@ public class Arena {
      * Removes all data of this arena from the arena file.
      */
     public void remove() {
-//        removeArenaBoard();
+        removeArenaBoard(ArenaRecordType.PRESENTS);
+        removeArenaBoard(ArenaRecordType.HAPPINESS);
         removePortal();
         config.set(path, null);
         plugin.saveArenaData();

@@ -206,7 +206,7 @@ public class ArenaListener implements Listener {
         }
 
         // Play wave start sound
-        if (arena.hasWaveStartSound()) {
+        if (arena.hasStartSound()) {
             for (GPlayer vdPlayer : arena.getPlayers()) {
                 vdPlayer.getPlayer().playSound(arena.getPlayerSpawn(),
                         Sound.ENTITY_ENDER_DRAGON_GROWL, 10, .25f);
@@ -245,18 +245,6 @@ public class ArenaListener implements Listener {
         player.stopSound(Sound.ENTITY_ENDER_DRAGON_DEATH);
         if (arena.getWaitingSound() != null)
             player.stopSound(arena.getWaitingSound());
-
-        FileConfiguration playerData = plugin.getPlayerData();
-
-//        // Update player stats
-//        playerData.set(player.getName() + ".totalKills",
-//                playerData.getInt(player.getName() + ".totalKills") + gamer.getKills());
-//        if (playerData.getInt(player.getName() + ".topKills") < gamer.getKills())
-//            playerData.set(player.getName() + ".topKills", gamer.getKills());
-//        plugin.savePlayerData();
-//
-//        // Refresh leaderboards
-//        plugin.getGame().refreshLeaderboards();
 
         // Remove the player from the arena and time limit bar if exists
         arena.getPlayers().remove(gamer);
@@ -376,17 +364,6 @@ public class ArenaListener implements Listener {
             }
         }
 
-        if (arena.getPlayers().size() > 0) {
-//            // Check for record
-//            if (arena.checkNewRecord(new ArenaRecord(arena.getCurrentWave() - 1, arena.getActives().stream()
-//                    .map(vdPlayer -> vdPlayer.getPlayer().getName()).collect(Collectors.toList())))) {
-//                arena.getPlayers().forEach(player -> player.getPlayer().sendTitle(
-//                        Utils.format(language.getString("record")), null, Utils.secondsToTicks(.5),
-//                        Utils.secondsToTicks(3.5), Utils.secondsToTicks(1)));
-//                arena.refreshArenaBoard();
-//            }
-        }
-
         Tasks task = arena.getTask();
         Map<Runnable, Integer> tasks = task.getTasks();
 
@@ -395,7 +372,7 @@ public class ArenaListener implements Listener {
             Bukkit.getScheduler().cancelTask(tasks.get(task.updateBar));
             tasks.remove(task.updateBar);
             arena.removeTimeLimitBar();
-            arena.cancelPresentParticles();
+            arena.checkRecords();
         }
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
                 Bukkit.getPluginManager().callEvent(new ArenaResetEvent(arena)), Utils.secondsToTicks(10));

@@ -38,7 +38,7 @@ public class Main extends JavaPlugin {
     int configVersion = 1;
     int arenaDataVersion = 2;
     int playerDataVersion = 1;
-    int languageFileVersion = 2;
+    int languageFileVersion = 3;
 
     @Override
     public void onEnable() {

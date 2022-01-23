@@ -6,7 +6,6 @@ import me.theguyhere.grinchsimulator.events.*;
 import me.theguyhere.grinchsimulator.game.models.Tasks;
 import me.theguyhere.grinchsimulator.game.models.arenas.Arena;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaManager;
-import me.theguyhere.grinchsimulator.game.models.arenas.ArenaRecord;
 import me.theguyhere.grinchsimulator.game.models.arenas.ArenaStatus;
 import me.theguyhere.grinchsimulator.game.models.players.GPlayer;
 import me.theguyhere.grinchsimulator.tools.Utils;
@@ -374,7 +373,6 @@ public class ArenaListener implements Listener {
             tasks.remove(task.updateBar);
             arena.removeTimeLimitBar();
             arena.checkRecords();
-            arena.returnPresents();
         }
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
                 Bukkit.getPluginManager().callEvent(new ArenaResetEvent(arena)), Utils.secondsToTicks(10));

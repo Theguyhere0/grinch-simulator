@@ -157,44 +157,47 @@ public class Arena {
     }
 
     public void returnPresents() {
-        Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents"))
-                .getKeys(false).forEach(type -> Utils.getConfigLocationList(plugin, path + ".presents." + type)
-                        .forEach(loc -> {
-                            // Change material
-                            loc.getBlock().setType(Material.PLAYER_HEAD);
+        try {
+            Objects.requireNonNull(plugin.getArenaData().getConfigurationSection(path + ".presents"))
+                    .getKeys(false).forEach(type -> Utils.getConfigLocationList(plugin, path + ".presents." + type)
+                            .forEach(loc -> {
+                                // Change material
+                                loc.getBlock().setType(Material.PLAYER_HEAD);
 
-                            // Set present orientation
-                            Rotatable data = (Rotatable) loc.getBlock().getBlockData();
-                            data.setRotation(Presents.getRotation(loc.getYaw()));
-                            loc.getBlock().setBlockData(data);
+                                // Set present orientation
+                                Rotatable data = (Rotatable) loc.getBlock().getBlockData();
+                                data.setRotation(Presents.getRotation(loc.getYaw()));
+                                loc.getBlock().setBlockData(data);
 
-                            // Get present skin
-                            ItemStack present = Presents.getByType(PresentType.valueOf(type.toUpperCase()));
-                            assert present != null;
-                            SkullMeta meta = ((SkullMeta) present.getItemMeta());
-                            GameProfile profile;
-                            Field profileField;
-                            try {
-                                assert meta != null;
-                                profileField = meta.getClass().getDeclaredField("profile");
-                                profileField.setAccessible(true);
-                                profile = (GameProfile) profileField.get(meta);
-                            } catch (Exception e) {
-                                return;
-                            }
+                                // Get present skin
+                                ItemStack present = Presents.getByType(PresentType.valueOf(type.toUpperCase()));
+                                assert present != null;
+                                SkullMeta meta = ((SkullMeta) present.getItemMeta());
+                                GameProfile profile;
+                                Field profileField;
+                                try {
+                                    assert meta != null;
+                                    profileField = meta.getClass().getDeclaredField("profile");
+                                    profileField.setAccessible(true);
+                                    profile = (GameProfile) profileField.get(meta);
+                                } catch (Exception e) {
+                                    return;
+                                }
 
-                            // Apply skin
-                            Skull state = (Skull) loc.getBlock().getState();
-                            Field anotherProfileField;
-                            try {
-                                anotherProfileField = state.getClass().getDeclaredField("profile");
-                                anotherProfileField.setAccessible(true);
-                                anotherProfileField.set(state, profile);
-                            } catch (Exception e) {
-                                return;
-                            }
-                            state.update();
-                        }));
+                                // Apply skin
+                                Skull state = (Skull) loc.getBlock().getState();
+                                Field anotherProfileField;
+                                try {
+                                    anotherProfileField = state.getClass().getDeclaredField("profile");
+                                    anotherProfileField.setAccessible(true);
+                                    anotherProfileField.set(state, profile);
+                                } catch (Exception e) {
+                                    return;
+                                }
+                                state.update();
+                            }));
+        } catch (Exception ignored) {
+        }
     }
 
     public void addPresent(PresentType type, Location location) {

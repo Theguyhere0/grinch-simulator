@@ -192,6 +192,7 @@ public class Tasks {
 
 			// Reset presents
 			arenaInstance.resetPresents();
+			arenaInstance.returnPresents();
 
 			// Debug message to console
 			Utils.debugInfo("Arena " + arena + " is resetting.", 2);
